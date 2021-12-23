@@ -10,26 +10,45 @@
       ./hardware-configuration.nix
     ];
 
+  nixpkgs.config.allowUnfree = true;
+  nix.autoOptimiseStore = true;
+  environment.variables.EDITOR = "nvim";
+  environment.sessionVariables = {
+    MOZ_ENABLE_WAYLAND = "1";
+    XDG_CURRENT_DESKTOP = "sway";# https://github.com/emersion/xdg-desktop-portal-wlr/issues/20
+    XDG_SESSION_TYPE = "wayland";# https://github.com/emersion/xdg-desktop-portal-wlr/pull/11
+  };
+
+
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "nixos"; # Define your hostname.
-  networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.hostName = "honeypot"; # Define your hostname.
+  # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.networkmanager.enable = true;
+  networking.wireless.iwd.enable = true;
+  networking.networkmanager.wifi.backend = "iwd";
 
   # Set your time zone.
-  time.timeZone = "America/Toronto";
+  time.timeZone = "America/Vancouver";
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
   networking.interfaces.enp57s0u1u3.useDHCP = true;
-  networking.interfaces.wlp2s0.useDHCP = true;
+  networking.interfaces.wlan0.useDHCP = true;
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
   # networking.proxy.noProxy = "127.0.0.1,localhost,internal.domain";
+  #
+  fonts = {
+    fonts = with pkgs; [
+      nerdfonts
+    ];
+  };
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -38,49 +57,124 @@
     keyMap = "us";
   };
 
-  # Enable the X11 windowing system.
-  # services.xserver.enable = true;
-
-
-  # Configure keymap in X11
-  # services.xserver.layout = "us";
-  # services.xserver.xkbOptions = "eurosign:e";
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
   # Enable sound.
-  sound.enable = true;
-  hardware.pulseaudio.enable = true;
+  # sound.enable = true;
+  security.rtkit.enable = true;
+  services.pipewire = {
+    enable = true;  	
+    alsa.enable = true;
+    pulse.enable = true;
+  };
+ 
+  xdg = {
+    icons.enable = true;
+    portal = {
+      enable = true;
+      extraPortals = [
+        pkgs.xdg-desktop-portal-gtk
+        pkgs.xdg-desktop-portal-wlr
+      ];
+      gtkUsePortal = true;
+    };
+  };
 
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
-
-  # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.kschoon = {
     isNormalUser = true;
-    extraGroups = [ "wheel" ]; # Enable ‘sudo’ for the user.
+    extraGroups = [ "wheel" "video" "networkmanager" "docker"]; 
   };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-    wget
-    firefox
-    git
-    gh
-  ];
+    #cli 
+    vim tmux
+    wget htop
+    git gh
 
-  # Some programs need SUID wrappers, can be configured further or are
-  # started in user sessions.
+    pkgs.nodePackages.prettier
+    nodePackages.json-server
+    nodePackages.diagnostic-languageserver
+    nodePackages.diagnostic-languageserver
+    rnix-lsp
+    # system-utils
+    libnotify brightnessctl pamixer
+
+    # gui 
+    firefox discord
+
+    earthly
+
+    # programming languages 
+    go poetry nodejs gcc tree-sitter
+    ctags
+
+    # lsps
+    gopls terraform-lsp pyright 
+    rust-analyzer
+    stylua efm-langserver # prettier 
+  ];
+  virtualisation.docker.enable = true;
+
+  security.pam.yubico = {
+    enable = true;
+    debug = false;
+    mode = "challenge-response";
+  };
+  security.pam.yubico.control = "sufficient";
+
   programs.mtr.enable = true;
+  programs.neovim = {
+    enable = true;
+    viAlias = true;
+    vimAlias = true;
+
+    configure = {
+    customRC = ''
+    luafile /home/kschoon/.config/nvim/lua/init.lua
+    '';
+    packages.nix.start = with pkgs.vimPlugins; [ 
+    	nvim-treesitter 
+	nvim-treesitter-textobjects 
+	vim-fugitive
+	vim-rhubarb
+	vim-commentary
+	vim-gutentags
+	telescope-nvim
+	onedark-vim
+	lightline-vim
+	indent-blankline-nvim
+	gitsigns-nvim
+	plenary-nvim
+	nvim-lspconfig
+	nvim-cmp
+	cmp-nvim-lsp
+	cmp_luasnip
+	luasnip
+	lsp_signature-nvim
+    ];
+    };
+  };
   programs.gnupg.agent = {
     enable = true;
     enableSSHSupport = true;
   };
+  programs.sway = {
+    enable = true;
+    extraPackages = with pkgs; [
+      swaylock
+      swayidle
+      waybar
+      wl-clipboard
+      mako
+      alacritty
+      dmenu
+      bemenu
+      grim
+      slurp
+    ];
+  };
 
-  # List services that you want to enable:
+  services.tailscale.enable = true; 
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;
