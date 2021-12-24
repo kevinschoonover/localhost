@@ -13,6 +13,7 @@ in {
 
   nixpkgs.config.allowUnfree = true;
   nix.autoOptimiseStore = true;
+  system.autoUpgrade.enable = true;
   environment.variables.EDITOR = "nvim";
   environment.sessionVariables = {
     MOZ_ENABLE_WAYLAND = "1";
@@ -38,7 +39,7 @@ in {
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
-  networking.interfaces.enp57s0u1u3.useDHCP = true;
+  # networking.interfaces.enp57s0u1u3.useDHCP = true;
   networking.interfaces.wlan0.useDHCP = true;
 
   # Configure network proxy if necessary
@@ -54,7 +55,7 @@ in {
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
   console = {
-    font = "Lat2-Terminus16";
+    font = "FiraCode Nerd Font";
     keyMap = "us";
   };
 
@@ -85,7 +86,8 @@ in {
   };
 
   environment.interactiveShellInit = ''
-   alias grep="ripgrep"
+   alias grep="rg"
+   alias rb="sudo nixos-rebuild switch"
    alias cat="bat"
    alias ls="exa"
    alias tb="cd ~/git-local/bloominlabs/hostin-proj/test-bed"
@@ -148,6 +150,7 @@ in {
     git gh
     ripgrep exa bat
     croc
+    nomad consul vault
 
     # passwords
     bitwarden bitwarden-cli
@@ -168,10 +171,16 @@ in {
     gopls terraform-lsp pyright 
     rust-analyzer
     stylua efm-langserver
+    sumneko-lua-language-server
     pkgs.nodePackages.prettier
+    nodePackages.eslint_d
     nodePackages.json-server
     nodePackages.diagnostic-languageserver
-    nodePackages.diagnostic-languageserver
+    nodePackages.vscode-css-languageserver-bin
+    nodePackages.vscode-html-languageserver-bin
+    nodePackages.dockerfile-language-server-nodejs
+    nodePackages.bash-language-server
+    nodePackages.typescript-language-server
     rnix-lsp
   ];
   virtualisation.docker.enable = true;
@@ -222,6 +231,7 @@ in {
   programs.sway = {
     enable = true;
     extraPackages = with pkgs; [
+      xdg-utils
       swaylock
       swayidle
       waybar
