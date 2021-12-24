@@ -88,6 +88,8 @@ in {
    alias grep="ripgrep"
    alias cat="bat"
    alias ls="exa"
+   alias tb="cd ~/git-local/bloominlabs/hostin-proj/test-bed"
+   alias sse="source ~/.stratos/creds.sh && source ~/.stratos/setup_env.sh"
 
    function we_are_in_git_work_tree {
     git rev-parse --is-inside-work-tree &> /dev/null
@@ -145,6 +147,7 @@ in {
     wget htop
     git gh
     ripgrep exa bat
+    croc
 
     # passwords
     bitwarden bitwarden-cli
