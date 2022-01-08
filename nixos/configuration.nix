@@ -4,23 +4,45 @@
 
 { config, pkgs, ... }:
 
-let unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
-in {
+let
+  unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
+  internalCA = builtins.readFile (builtins.fetchurl {
+    url = "https://vault.prod.stratos.host:8200/v1/internal/ca/pem";
+    sha256 = "185ca789ca9d680c92a7e749bbf8612a4802c2278487caf38655b1870478824a";
+  });
+in
+{
   imports =
-    [ # Include the results of the hardware scan.
+    [
+      # https://github.com/NixOS/nixos-hardware
+      <nixos-hardware/dell/xps/13-9380>
+      # Include the results of the hardware scan.
       ./hardware-configuration.nix
     ];
 
-  nixpkgs.config.allowUnfree = true;
+  # optimize the nixstore by symlinking identically derivations
   nix.autoOptimiseStore = true;
+  # periodically trim the SSD
+  services.fstrim.enable = true;
+  # automatically garbage collect the nix store
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    options = "--delete-older-than 30d";
+  };
+  nixpkgs.config.allowUnfree = true;
   system.autoUpgrade.enable = true;
+  security.pki.certificates = [ internalCA ];
   environment.variables.EDITOR = "nvim";
   environment.sessionVariables = {
     MOZ_ENABLE_WAYLAND = "1";
-    XDG_CURRENT_DESKTOP = "sway";# https://github.com/emersion/xdg-desktop-portal-wlr/issues/20
-    XDG_SESSION_TYPE = "wayland";# https://github.com/emersion/xdg-desktop-portal-wlr/pull/11
+    XDG_CURRENT_DESKTOP = "sway"; # https://github.com/emersion/xdg-desktop-portal-wlr/issues/20
+    XDG_SESSION_TYPE = "wayland"; # https://github.com/emersion/xdg-desktop-portal-wlr/pull/11
   };
 
+  # firmware updated
+  # https://github.com/NixOS/nixos-hardware/tree/master/dell/xps/13-9380
+  services.fwupd.enable = true;
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
@@ -31,6 +53,21 @@ in {
   networking.networkmanager.enable = true;
   networking.wireless.iwd.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
+  services.resolved.enable = true;
+  services.resolved.fallbackDns = [
+    # cloudflare
+    "1.1.1.1"
+    "1.0.0.1"
+    "2606:4700:4700::1111"
+    "2606:4700:4700::1001"
+
+    # google
+    "8.8.8.8"
+    "8.8.4.4"
+    "2001:4860:4860::8888"
+    "2001:4860:4860::8844"
+  ];
+  networking.nameservers = [ "1.1.1.1" "1.0.0.1" ];
 
   # Set your time zone.
   time.timeZone = "America/Vancouver";
@@ -63,11 +100,27 @@ in {
   # sound.enable = true;
   security.rtkit.enable = true;
   services.pipewire = {
-    enable = true;  	
+    enable = true;
     alsa.enable = true;
     pulse.enable = true;
+    jack.enable = true;
+
+    media-session.config.alsa-monitor = {
+      rules = [
+        {
+          matches = [{ "node.name" = "alsa_output.*"; }];
+          actions = {
+            update-props = {
+              "api.acp.auto-port" = false;
+              "api.acp.auto-profile" = false;
+              "api.alsa.use-acp" = false;
+            };
+          };
+        }
+      ];
+    };
   };
- 
+
   xdg = {
     icons.enable = true;
     portal = {
@@ -82,95 +135,127 @@ in {
 
   users.users.kschoon = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "video" "networkmanager" "docker"]; 
+    extraGroups = [ "wheel" "video" "networkmanager" "docker" ];
   };
 
   environment.interactiveShellInit = ''
-   alias grep="rg"
-   alias rb="sudo nixos-rebuild switch"
-   alias cat="bat"
-   alias ls="exa"
-   alias tb="cd ~/git-local/bloominlabs/hostin-proj/test-bed"
-   alias sse="source ~/.stratos/creds.sh && source ~/.stratos/setup_env.sh"
+    alias grep="rg"
+    alias rb="sudo nixos-rebuild switch"
+    alias cat="bat"
+    alias ls="exa"
+    alias tb="cd ~/git-local/bloominlabs/hostin-proj/test-bed"
+    alias sse="source ~/.stratos/creds.sh && source ~/.stratos/setup_env.sh"
 
-   function we_are_in_git_work_tree {
-    git rev-parse --is-inside-work-tree &> /dev/null
-   }
+    function we_are_in_git_work_tree {
+     git rev-parse --is-inside-work-tree &> /dev/null
+    }
    
-   function parse_git_branch {
-       if we_are_in_git_work_tree
-       then
-       local BR=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD 2> /dev/null)
-       if [ "$BR" == HEAD ]
-       then
-           local NM=$(git name-rev --name-only HEAD 2> /dev/null)
-           if [ "$NM" != undefined ]
-           then echo -n "@$NM"
-           else git rev-parse --short HEAD 2> /dev/null
+    function parse_git_branch {
+        if we_are_in_git_work_tree
+        then
+        local BR=$(git rev-parse --symbolic-full-name --abbrev-ref HEAD 2> /dev/null)
+        if [ "$BR" == HEAD ]
+        then
+            local NM=$(git name-rev --name-only HEAD 2> /dev/null)
+            if [ "$NM" != undefined ]
+            then echo -n "@$NM"
+            else git rev-parse --short HEAD 2> /dev/null
+            fi
+        else
+            echo -n $BR
            fi
-       else
-           echo -n $BR
-          fi
-       fi
-   }
+        fi
+    }
    
-   function parse_git_status {
-       if we_are_in_git_work_tree
-       then
-       local ST=$(git status --short 2> /dev/null)
-       if [ -n "$ST" ]
-       then echo -n " + "
-       else echo -n " - "
-       fi
-       fi
-   }
+    function parse_git_status {
+        if we_are_in_git_work_tree
+        then
+        local ST=$(git status --short 2> /dev/null)
+        if [ -n "$ST" ]
+        then echo -n " + "
+        else echo -n " - "
+        fi
+        fi
+    }
    
-   function pwd_depth_limit_2 {
-       if [ "$PWD" = "$HOME" ]
-       then echo -n "~"
-       else pwd | sed -e "s|.*/\(.*/.*\)|\1|"
-       fi
-   }
+    function pwd_depth_limit_2 {
+        if [ "$PWD" = "$HOME" ]
+        then echo -n "~"
+        else pwd | sed -e "s|.*/\(.*/.*\)|\1|"
+        fi
+    }
    
-   COLBROWN="\[\033[1;33m\]"
-   COLRED="\[\033[1;31m\]"
-   COLCLEAR="\[\033[0m\]"
+    COLBROWN="\[\033[1;33m\]"
+    COLRED="\[\033[1;31m\]"
+    COLCLEAR="\[\033[0m\]"
    
-   # Export all these for subshells
-   export -f parse_git_branch parse_git_status we_are_in_git_work_tree pwd_depth_limit_2
-   export PS1="$COLRED\$(parse_git_status)$COLBROWN\$(parse_git_branch) $COLRED>$COLCLEAR "
+    # Export all these for subshells
+    export -f parse_git_branch parse_git_status we_are_in_git_work_tree pwd_depth_limit_2
+    export PS1="$COLRED\$(parse_git_status)$COLBROWN\$(parse_git_branch) $COLRED>$COLCLEAR "
   '';
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    #cli 
-    vim tmux
-    wget htop
-    git gh
-    ripgrep exa bat
+    # cli 
+    jq
+    vim
+    tmux
+    wget
+    htop
+    git
+    gh
+    ripgrep
+    exa
+    bat
     croc
-    nomad consul vault
+    step-cli
+    nomad
+    consul
+    consul-template
+    # envconsul
+    vault
+    unstable.pulumi-bin
+    dogdns
+
+    unstable.packer
 
     # passwords
-    bitwarden bitwarden-cli
- 
+    bitwarden
+    bitwarden-cli
+
     # system-utils
-    libnotify brightnessctl pamixer
+    libnotify
+    brightnessctl
+    pamixer
+    pavucontrol
 
     # gui 
-    firefox firefox-devedition-bin discord
+    firefox
+    firefox-devedition-bin
+    google-chrome
+    discord
 
     unstable.earthly
 
     # programming languages 
-    go poetry nodejs gcc tree-sitter
+    gnumake
+    go_1_17
+    poetry
+    nodejs
+    yarn
+    gcc
+    tree-sitter
     ctags
 
     # lsps
-    gopls terraform-lsp pyright 
+    gopls
+    goimports
+    terraform-lsp
+    pyright
     rust-analyzer
-    stylua efm-langserver
+    stylua
+    efm-langserver
     sumneko-lua-language-server
     pkgs.nodePackages.prettier
     nodePackages.eslint_d
@@ -184,6 +269,7 @@ in {
     rnix-lsp
   ];
   virtualisation.docker.enable = true;
+  virtualisation.docker.autoPrune.enable = true;
 
   security.pam.yubico = {
     enable = true;
@@ -193,35 +279,36 @@ in {
   security.pam.yubico.control = "sufficient";
 
   programs.mtr.enable = true;
+  programs.steam.enable = true;
   programs.neovim = {
     enable = true;
     viAlias = true;
     vimAlias = true;
 
     configure = {
-    customRC = ''
-    luafile /home/kschoon/.config/nvim/lua/init.lua
-    '';
-    packages.nix.start = with pkgs.vimPlugins; [ 
-    	nvim-treesitter 
-	nvim-treesitter-textobjects 
-	vim-fugitive
-	vim-rhubarb
-	vim-commentary
-	vim-gutentags
-	telescope-nvim
-	onedark-vim
-	lightline-vim
-	indent-blankline-nvim
-	gitsigns-nvim
-	plenary-nvim
-	nvim-lspconfig
-	nvim-cmp
-	cmp-nvim-lsp
-	cmp_luasnip
-	luasnip
-	lsp_signature-nvim
-    ];
+      customRC = ''
+        luafile /home/kschoon/.config/nvim/lua/init.lua
+      '';
+      packages.nix.start = with pkgs.vimPlugins; [
+        nvim-treesitter
+        nvim-treesitter-textobjects
+        vim-fugitive
+        vim-rhubarb
+        vim-commentary
+        vim-gutentags
+        telescope-nvim
+        onedark-vim
+        lightline-vim
+        indent-blankline-nvim
+        gitsigns-nvim
+        plenary-nvim
+        nvim-lspconfig
+        nvim-cmp
+        cmp-nvim-lsp
+        cmp_luasnip
+        luasnip
+        lsp_signature-nvim
+      ];
     };
   };
   programs.gnupg.agent = {
@@ -245,7 +332,7 @@ in {
     ];
   };
 
-  services.tailscale.enable = true; 
+  services.tailscale.enable = true;
 
   # Enable the OpenSSH daemon.
   # services.openssh.enable = true;

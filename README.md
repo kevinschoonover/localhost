@@ -46,3 +46,7 @@ sudo mount /dev/mapper/vg1-root /mnt/
 sudo mount /dev/nvme0n1p2 /mnt/boot/
 sudo nixos-generate-config --root /mnt/
 ```
+
+## Post Install
+1. [register yubikey for login](https://nixos.wiki/wiki/Yubikey#Logging-in)
+2. symlink dotfiles
