@@ -4,6 +4,8 @@
 Personal dotfiles / installation instructure for my personal setup using NixOS.
 
 ## Pre-Install Commands
+<https://nixos.wiki/wiki/Yubikey_based_Full_Disk_Encryption_(FDE)_on_NixOS>
+
 ```bash
 ykpersonalize -2 -ochal-resp -ochal-hmac
 sudo parted -s /dev/nvme0n1 mklabel gpt

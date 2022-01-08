@@ -302,9 +302,15 @@ in
         indent-blankline-nvim
         gitsigns-nvim
         plenary-nvim
+
         nvim-lspconfig
-        nvim-cmp
+
+        # completion
         cmp-nvim-lsp
+        cmp-buffer
+        cmp-path
+        cmp-cmdline
+        nvim-cmp
         cmp_luasnip
         luasnip
         lsp_signature-nvim
