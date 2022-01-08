@@ -40,5 +40,6 @@ sudo swapon /dev/mapper/vg1-swap
 sudo mount /dev/mapper/vg1-root /mnt/
 sudo mkdir -p /mnt/boot
 sudo mount $EFI_PARTITION /mnt/boot/
-echo -ne "$SALT\n$ITERATIONS" > /mnt/boot/crypt-storage/default
+sudo mkdir -p /mnt/boot/crypt-storage
+echo -ne "$SALT\n$ITERATIONS" | sudo tee -a /mnt/boot/crypt-storage/default
 sudo nixos-generate-config --root /mnt/
