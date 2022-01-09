@@ -10,9 +10,6 @@ let
   # });
 in
 {
-  # Minimal list of modules to use the EFI system partition and the YubiKey
-  boot.initrd.kernelModules = [ "vfat" "nls_cp437" "nls_iso8859-1" "usbhid" "nouveau" ];
-
   # Enable support for the YubiKey PBA
   boot.initrd.luks.yubikeySupport = true;
 
