@@ -4,10 +4,10 @@ let
   unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
   # TODO: does not work during install because tailscale is not initialized
   # + you need certificate to even be able to access it
-  # internalCA = builtins.readFile (builtins.fetchurl {
-  #   url = "https://vault.prod.stratos.host:8200/v1/internal/ca/pem";
-  #   sha256 = "185ca789ca9d680c92a7e749bbf8612a4802c2278487caf38655b1870478824a";
-  # });
+  internalCA = builtins.readFile (builtins.fetchurl {
+    url = "https://vault.prod.stratos.host:8200/v1/internal/ca/pem";
+    sha256 = "185ca789ca9d680c92a7e749bbf8612a4802c2278487caf38655b1870478824a";
+  });
 in
 {
   # Enable support for the YubiKey PBA
@@ -25,7 +25,7 @@ in
   };
   nixpkgs.config.allowUnfree = true;
   system.autoUpgrade.enable = true;
-  # security.pki.certificates = [ internalCA ];
+  security.pki.certificates = [ internalCA ];
   environment.variables.EDITOR = "nvim";
   environment.sessionVariables = {
     MOZ_ENABLE_WAYLAND = "1";
@@ -47,6 +47,7 @@ in
   networking.wireless.iwd.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
   services.resolved.enable = true;
+  services.resolved.dnssec = "allow-downgrade";
   services.resolved.fallbackDns = [
     # cloudflare
     "1.1.1.1"
@@ -220,12 +221,16 @@ in
     pavucontrol
 
     # gui 
+    altair # graphql client
+    insomnia # rest client
     firefox
     firefox-devedition-bin
     google-chrome
     discord
+    spotify
 
     unstable.earthly
+    docker-compose
 
     # programming languages 
     gnumake
