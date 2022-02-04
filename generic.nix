@@ -6,8 +6,9 @@ let
   # + you need certificate to even be able to access it
   internalCA = builtins.readFile (builtins.fetchurl {
     url = "https://vault.prod.stratos.host:8200/v1/internal/ca/pem";
-    sha256 = "185ca789ca9d680c92a7e749bbf8612a4802c2278487caf38655b1870478824a";
+    sha256 = "42530935ac31693d2be69f6b64849d4e444c70f962f34a8ab742c92cc37c71cb";
   });
+  # internalCA = builtins.readFile /home/kschoon/Downloads/pem;
 in
 {
   # Enable support for the YubiKey PBA
@@ -17,6 +18,9 @@ in
   nix.autoOptimiseStore = true;
   # periodically trim the SSD
   services.fstrim.enable = true;
+  nixpkgs.overlays = [
+    (import (builtins.fetchTarball "https://github.com/PolyMC/PolyMC/archive/develop.tar.gz")).overlay
+  ];
   # automatically garbage collect the nix store
   nix.gc = {
     automatic = true;
@@ -40,7 +44,6 @@ in
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-  boot.plymouth.enable = true;
 
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   networking.networkmanager.enable = true;
@@ -223,6 +226,7 @@ in
     # gui 
     altair # graphql client
     insomnia # rest client
+    polymc
     firefox
     firefox-devedition-bin
     google-chrome
