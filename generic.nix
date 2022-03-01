@@ -2,11 +2,12 @@
 
 let
   unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
+  unstable-small = import <nixos-unstable-small> { config = { allowUnfree = true; }; };
   # TODO: does not work during install because tailscale is not initialized
   # + you need certificate to even be able to access it
   internalCA = builtins.readFile (builtins.fetchurl {
     url = "https://vault.prod.stratos.host:8200/v1/internal/ca/pem";
-    sha256 = "42530935ac31693d2be69f6b64849d4e444c70f962f34a8ab742c92cc37c71cb";
+    sha256 = "18ip2a78gyfjh67x1m4lk1bgiypvz96blpfjlmi197crp61jz7yn";
   });
   # internalCA = builtins.readFile /home/kschoon/Downloads/pem;
 in
@@ -18,9 +19,6 @@ in
   nix.autoOptimiseStore = true;
   # periodically trim the SSD
   services.fstrim.enable = true;
-  nixpkgs.overlays = [
-    (import (builtins.fetchTarball "https://github.com/PolyMC/PolyMC/archive/develop.tar.gz")).overlay
-  ];
   # automatically garbage collect the nix store
   nix.gc = {
     automatic = true;
@@ -132,6 +130,7 @@ in
   '';
 
   environment.interactiveShellInit = ''
+    export PATH=$PATH:~/go/bin
     alias grep="rg"
     alias rb="sudo nixos-rebuild switch"
     alias cat="bat"
@@ -226,11 +225,11 @@ in
     # gui 
     altair # graphql client
     insomnia # rest client
-    polymc
+    minecraft
     firefox
     firefox-devedition-bin
     google-chrome
-    discord
+    unstable-small.discord
     spotify
 
     unstable.earthly
@@ -292,7 +291,7 @@ in
         luafile /home/kschoon/.config/nvim/lua/init.lua
       '';
       packages.nix.start = with pkgs.vimPlugins; [
-        nvim-treesitter
+        (nvim-treesitter.withPlugins (plugins: unstable.tree-sitter.allGrammars))
         nvim-treesitter-textobjects
         vim-fugitive
         vim-rhubarb
