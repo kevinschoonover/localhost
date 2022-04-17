@@ -2,12 +2,11 @@
 
 let
   unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
-  unstable-small = import <nixos-unstable-small> { config = { allowUnfree = true; }; };
   # TODO: does not work during install because tailscale is not initialized
   # + you need certificate to even be able to access it
   internalCA = builtins.readFile (builtins.fetchurl {
     url = "https://vault.prod.stratos.host:8200/v1/internal/ca/pem";
-    sha256 = "18ip2a78gyfjh67x1m4lk1bgiypvz96blpfjlmi197crp61jz7yn";
+    sha256 = "d69f2f83b9999d1462a5d25dba4cfafbfaf8569894d4d08f81d2f9878e1237a2";
   });
   # internalCA = builtins.readFile /home/kschoon/Downloads/pem;
 in
@@ -221,6 +220,7 @@ in
     brightnessctl
     pamixer
     pavucontrol
+    unzip
 
     # gui 
     altair # graphql client
@@ -229,7 +229,7 @@ in
     firefox
     firefox-devedition-bin
     google-chrome
-    unstable-small.discord
+    unstable.discord
     spotify
 
     unstable.earthly
@@ -237,7 +237,7 @@ in
 
     # programming languages 
     gnumake
-    go_1_17
+    go
     poetry
     nodejs
     yarn
@@ -291,7 +291,8 @@ in
         luafile /home/kschoon/.config/nvim/lua/init.lua
       '';
       packages.nix.start = with pkgs.vimPlugins; [
-        (nvim-treesitter.withPlugins (plugins: unstable.tree-sitter.allGrammars))
+        # (nvim-treesitter.withPlugins (plugins: unstable.tree-sitter.allGrammars))
+        nvim-treesitter
         nvim-treesitter-textobjects
         vim-fugitive
         vim-rhubarb
