@@ -1,9 +1,11 @@
 # localhost
+
 > there is no place like home
 
 Personal dotfiles / installation instructure for my personal setup using NixOS.
 
 ## Pre-Install Commands
+
 <https://nixos.wiki/wiki/Yubikey_based_Full_Disk_Encryption_(FDE)_on_NixOS>
 
 ```bash
@@ -32,23 +34,29 @@ sudo mkdir -p /mnt/boot/
 sudo mount /dev/nvme0n1p2 /mnt/boot/
 sudo echo -ne "$SALT\n$ITERATIONS" > /mnt/boot/crypt-storage/default
 echo -n "$LUKS_KEY" | hextorb | sudo cryptsetup open /dev/nvme0n1p3 encrypted --key-file=-
-pvcreate /dev/mapper/encrypted 
-sudo pvcreate /dev/mapper/encrypted 
+pvcreate /dev/mapper/encrypted
+sudo pvcreate /dev/mapper/encrypted
 sudo vgcreate vg1 /dev/mapper/encrypted
 sudo lvcreate -L 8G vg1 -n swap
 sudo lvcreate -l +100%FREE vg1 -n root
 sudo lvdisplay
-sudo mkfs.ext4 -L nixos /dev/mapper/vg1-root 
-sudo mkswap -L swap /dev/mapper/vg1-swap 
+sudo mkfs.ext4 -L nixos /dev/mapper/vg1-root
+sudo mkswap -L swap /dev/mapper/vg1-swap
 sudo mount /dev/mapper/vg1-root /mnt/
 sudo mkdir -p /mnt/boot
 sudo mount /dev/nvme0n1p2 /mnt/boot/
-sudo swapon /dev/mapper/vg1-swap 
+sudo swapon /dev/mapper/vg1-swap
 sudo mount /dev/mapper/vg1-root /mnt/
 sudo mount /dev/nvme0n1p2 /mnt/boot/
 sudo nixos-generate-config --root /mnt/
 ```
 
 ## Post Install
+
 1. [register yubikey for login](https://nixos.wiki/wiki/Yubikey#Logging-in)
 2. symlink dotfiles
+
+## Resources
+
+1. <https://nixos.wiki/wiki/Nixpkgs/Create_and_debug_packages>
+2. <https://nixpk.gs/pr-tracker.html?pr=160499>
