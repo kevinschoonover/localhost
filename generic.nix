@@ -43,6 +43,7 @@ in
   boot.loader.efi.canTouchEfiVariables = true;
 
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.firewall.allowedTCPPorts = [ 8000 ];
   networking.networkmanager.enable = true;
   networking.wireless.iwd.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
@@ -237,13 +238,16 @@ in
 
     # programming languages 
     gnumake
-    go
+    go_1_17
     poetry
     nodejs
     yarn
     gcc
     tree-sitter
     ctags
+    rustc
+    cargo
+    binutils
 
     # lsps
     gopls
@@ -281,8 +285,10 @@ in
   hardware.opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ libva ];
   hardware.pulseaudio.support32Bit = true;
   hardware.steam-hardware.enable = true;
+
   programs.neovim = {
     enable = true;
+    package = unstable.neovim-unwrapped;
     viAlias = true;
     vimAlias = true;
 
