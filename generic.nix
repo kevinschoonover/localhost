@@ -42,8 +42,12 @@ in
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
+  # services.openssh.enable = true;
+  # services.openssh.listenAddresses = [{ addr = "100.120.192.102"; port = 2222; }];
+  # users.users.kschoon.openssh.authorizedKeys.keys = [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC32BCKLtDkwrVviZZClZSJ5AO2XeWaFUp7CLOJgPSWp0JTck4aGx9U8zjtjo1xzTRqtm5R+ftu6MBbgpEEo2z5NQoBPSOa89AyeszRMDFgHboNNrJ8sn6+ToLpzWJKXnOM0BhNIdbYXjVdROcKnf+/tiO9mj+tIn42iGppbmMKeO+BXvuMhkQV6FL9gJbxRDD6VI1hgOlHg0Ku2a8c8KKW3eiv9XtOc8kuDY68Yg/mPTY3wUgBqwqaq+HYo+gMEkWZefiG+JvlOw18cwx3fsr0CBVHgZsZIcSdQMNx5MkQx/+M8ZKnJzCHcGPRPCYdpwQOFxBLXDG2RI7sAcVw9be8K6RlLuEBmxrY8O/QtTHmkVlOjn+s5fyfK3GY5hnUV9+R1ao+EDoF9z2IGZSbypnK+gne+bGkq2J0CH4P6Hws8xgFIWefi06i7k03LcMnkDRTmifTrCvUCRSYxIrr+PthK4wDHUyqTCsWp7jfZ5TwynRR7vss593CIjJTrx+xrBiMYEWRXp13+PPl0qF2RpxfKesOu5nZsD7UmWv8FTy6GJocC0k+CHrnk4FAAuLETQPBHQkfJMqyRhvRAmoO4CpviTQ2pQEkIrC3AXJkLxxltpRidK/I4DTmW0mHcJiXzXvLmR/YWTDprWYEtXaSBHtFU5pt88wt/pO2RpIlOkWu0w== kschoon@honeypot" ];
+
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  networking.firewall.allowedTCPPorts = [ 8000 ];
+  networking.firewall.allowedTCPPorts = [ 2222 8000 ];
   networking.networkmanager.enable = true;
   networking.wireless.iwd.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
@@ -137,6 +141,7 @@ in
     alias ls="exa"
     alias tb="cd ~/git-local/bloominlabs/hostin-proj/test-bed"
     alias sse="source ~/.stratos/creds.sh && source ~/.stratos/setup_env.sh"
+    alias blssh="vault ssh -host-key-mount-point=ssh-infra-host -mount-point=ssh-infra-client -role=root -mode=ca"
 
     function we_are_in_git_work_tree {
      git rev-parse --is-inside-work-tree &> /dev/null
@@ -212,6 +217,8 @@ in
 
     unstable.packer
 
+    unstable.helix
+
     # passwords
     bitwarden
     bitwarden-cli
@@ -238,8 +245,9 @@ in
 
     # programming languages 
     gnumake
-    go_1_17
-    poetry
+    unstable.go_1_18
+    unstable.poetry
+    # pnpm
     nodejs
     yarn
     gcc
@@ -279,6 +287,7 @@ in
   };
   security.pam.yubico.control = "sufficient";
 
+  services.openssh.enable = true;
   programs.mtr.enable = true;
   programs.steam.enable = true;
   hardware.opengl.driSupport32Bit = true;
