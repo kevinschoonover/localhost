@@ -207,10 +207,10 @@ in
     bat
     croc
     step-cli
-    nomad
-    consul
-    consul-template
-    # envconsul
+    unstable.nomad_1_3
+    unstable.consul
+    unstable.consul-template
+    unstable.envconsul
     vault
     unstable.pulumi-bin
     dogdns
@@ -247,8 +247,8 @@ in
     unstable.go_1_18
     unstable.poetry
     # pnpm
-    nodejs
-    yarn
+    unstable.nodejs
+    unstable.yarn
     gcc
     tree-sitter
     ctags
