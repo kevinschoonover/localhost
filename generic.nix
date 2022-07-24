@@ -205,7 +205,7 @@ in
     ripgrep
     exa
     bat
-    croc
+    unstable.croc
     step-cli
     unstable.nomad_1_3
     unstable.consul
@@ -228,6 +228,7 @@ in
     pamixer
     pavucontrol
     unzip
+    vulkan-tools
 
     # gui 
     altair # graphql client
@@ -245,6 +246,8 @@ in
     # programming languages 
     gnumake
     unstable.go_1_18
+    unstable.air # golang auto rebuilder
+    unstable.delve # golang debugger
     unstable.poetry
     # pnpm
     unstable.nodejs
@@ -257,24 +260,24 @@ in
     binutils
 
     # lsps
-    gopls
-    goimports
-    terraform-lsp
-    pyright
-    rust-analyzer
-    stylua
-    efm-langserver
-    sumneko-lua-language-server
-    pkgs.nodePackages.prettier
-    nodePackages.eslint_d
-    nodePackages.json-server
-    nodePackages.diagnostic-languageserver
-    nodePackages.vscode-css-languageserver-bin
-    nodePackages.vscode-html-languageserver-bin
-    nodePackages.dockerfile-language-server-nodejs
-    nodePackages.bash-language-server
-    nodePackages.typescript-language-server
-    rnix-lsp
+    unstable.gopls
+    unstable.gotools
+    unstable.terraform-lsp
+    unstable.pyright
+    unstable.rust-analyzer
+    unstable.stylua
+    unstable.efm-langserver
+    unstable.sumneko-lua-language-server
+    unstable.pkgs.nodePackages.prettier
+    unstable.nodePackages.eslint_d
+    unstable.nodePackages.json-server
+    unstable.nodePackages.diagnostic-languageserver
+    unstable.nodePackages.vscode-css-languageserver-bin
+    unstable.nodePackages.vscode-html-languageserver-bin
+    unstable.nodePackages.dockerfile-language-server-nodejs
+    unstable.nodePackages.bash-language-server
+    unstable.nodePackages.typescript-language-server
+    unstable.rnix-lsp
   ];
   virtualisation.docker.enable = true;
   virtualisation.docker.autoPrune.enable = true;
@@ -288,6 +291,7 @@ in
 
   programs.mtr.enable = true;
   programs.steam.enable = true;
+  hardware.opengl.driSupport = true;
   hardware.opengl.driSupport32Bit = true;
   hardware.opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ libva ];
   hardware.pulseaudio.support32Bit = true;
