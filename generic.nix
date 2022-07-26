@@ -32,6 +32,8 @@ in
     MOZ_ENABLE_WAYLAND = "1";
     XDG_CURRENT_DESKTOP = "sway"; # https://github.com/emersion/xdg-desktop-portal-wlr/issues/20
     XDG_SESSION_TYPE = "wayland"; # https://github.com/emersion/xdg-desktop-portal-wlr/pull/11
+    WLR_NO_HARDWARE_CURSORS = "1";
+    # WLR_RENDERER = "vulkan";
   };
 
   # firmware updated
@@ -128,7 +130,7 @@ in
 
   environment.loginShellInit = ''
     if [ "$(tty)" = "/dev/tty1" ]; then
-      exec sway >> ~/.sway.log 2>&1 
+      exec sway --my-next-gpu-wont-be-nvidia >> ~/.sway.log 2>&1 
       # exec ${pkgs.kanshi}/bin/kanshi 2>&1 ~/.kanshi.log
     fi
   '';
@@ -237,8 +239,20 @@ in
     firefox
     firefox-devedition-bin
     google-chrome
-    unstable.discord
+    # unstable.discord
+    # Work around https://github.com/NixOS/nixpkgs/issues/159267
+    (pkgs.writeShellApplication {
+      name = "discord";
+      text = "${unstable.discord}/bin/discord --use-gl=desktop";
+    })
+    (pkgs.makeDesktopItem {
+      name = "discord";
+      exec = "discord";
+      desktopName = "Discord";
+    })
     spotify
+
+    unstable.kitty
 
     unstable.earthly
     docker-compose
@@ -372,6 +386,15 @@ in
   hardware.opengl = {
     enable = true;
   };
+  # TODO: enabling allows steam and proton support but makes alacritty unusable, discord render a blank screen, and screen teraing randomly
+  # hardware = {
+  #   # video.hidpi.enable = true;
+  #   nvidia = {
+  #     modesetting.enable = true;
+  #     package = config.boot.kernelPackages.nvidiaPackages.stable;
+  #   };
+  # };
+  # services.xserver.videoDrivers = [ "nvidia" ];
 
   services.tailscale.enable = true;
 }
