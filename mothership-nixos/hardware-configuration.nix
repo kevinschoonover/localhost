@@ -5,7 +5,8 @@
 
 {
   imports =
-    [ (modulesPath + "/installer/scan/not-detected.nix")
+    [
+      (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "usb_storage" "sd_mod" ];
@@ -14,18 +15,30 @@
   boot.extraModulePackages = [ ];
 
   fileSystems."/" =
-    { device = "/dev/disk/by-uuid/3b94b72a-d8ce-4ac4-a997-7ddc0536f97a";
+    {
+      device = "/dev/disk/by-uuid/3b94b72a-d8ce-4ac4-a997-7ddc0536f97a";
       fsType = "ext4";
     };
 
   fileSystems."/boot" =
-    { device = "/dev/disk/by-uuid/FFCA-1213";
+    {
+      device = "/dev/disk/by-uuid/FFCA-1213";
       fsType = "vfat";
     };
 
   swapDevices =
-    [ { device = "/dev/disk/by-uuid/dd5f2975-7f94-4149-848d-d8d4e66f63f6"; }
-    ];
+    [{ device = "/dev/disk/by-uuid/dd5f2975-7f94-4149-848d-d8d4e66f63f6"; }];
 
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
+
+  # TODO: enabling allows steam and proton support but makes alacritty unusable, discord render a blank screen, and screen teraing randomly
+  hardware = {
+    # video.hidpi.enable = true;
+    nvidia = {
+      modesetting.enable = true;
+      package = config.boot.kernelPackages.nvidiaPackages.beta;
+    };
+  };
+  services.xserver.videoDrivers = [ "nvidia" ];
+
 }

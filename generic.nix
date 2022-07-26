@@ -239,17 +239,8 @@ in
     firefox
     firefox-devedition-bin
     google-chrome
-    # unstable.discord
-    # Work around https://github.com/NixOS/nixpkgs/issues/159267
-    (pkgs.writeShellApplication {
-      name = "discord";
-      text = "${unstable.discord}/bin/discord --use-gl=desktop";
-    })
-    (pkgs.makeDesktopItem {
-      name = "discord";
-      exec = "discord";
-      desktopName = "Discord";
-    })
+    unstable.discord
+
     spotify
 
     unstable.kitty
@@ -386,15 +377,6 @@ in
   hardware.opengl = {
     enable = true;
   };
-  # TODO: enabling allows steam and proton support but makes alacritty unusable, discord render a blank screen, and screen teraing randomly
-  # hardware = {
-  #   # video.hidpi.enable = true;
-  #   nvidia = {
-  #     modesetting.enable = true;
-  #     package = config.boot.kernelPackages.nvidiaPackages.stable;
-  #   };
-  # };
-  # services.xserver.videoDrivers = [ "nvidia" ];
 
   services.tailscale.enable = true;
 }
