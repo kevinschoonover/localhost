@@ -136,7 +136,7 @@ in
   '';
 
   environment.interactiveShellInit = ''
-    export PATH=$PATH:~/go/bin
+    export PATH=$PATH:~/go/bin:~/.yarn/bin/
     alias grep="rg"
     alias rb="sudo nixos-rebuild switch"
     alias cat="bat"
@@ -260,16 +260,16 @@ in
     gcc
     tree-sitter
     ctags
-    rustc
     cargo
     binutils
+    unstable.wrangler
+    unstable.rustup
 
     # lsps
     unstable.gopls
     unstable.gotools
     unstable.terraform-lsp
     unstable.pyright
-    unstable.rust-analyzer
     unstable.stylua
     unstable.efm-langserver
     unstable.sumneko-lua-language-server
@@ -380,4 +380,3 @@ in
 
   services.tailscale.enable = true;
 }
-

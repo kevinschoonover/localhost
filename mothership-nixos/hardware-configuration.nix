@@ -31,14 +31,12 @@
 
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 
-  # TODO: enabling allows steam and proton support but makes alacritty unusable, discord render a blank screen, and screen teraing randomly
-  hardware = {
-    # video.hidpi.enable = true;
-    nvidia = {
-      modesetting.enable = true;
-      package = config.boot.kernelPackages.nvidiaPackages.beta;
-    };
-  };
-  services.xserver.videoDrivers = [ "nvidia" ];
-
+  # services.xserver.videoDrivers = [ "nvidia" ];
+  # hardware = {
+  #   # video.hidpi.enable = true;
+  #   nvidia = {
+  #     modesetting.enable = true;
+  #     package = config.boot.kernelPackages.nvidiaPackages.beta;
+  #   };
+  # };
 }
