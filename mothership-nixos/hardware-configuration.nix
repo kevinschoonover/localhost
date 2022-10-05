@@ -30,13 +30,4 @@
     [{ device = "/dev/disk/by-uuid/dd5f2975-7f94-4149-848d-d8d4e66f63f6"; }];
 
   hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
-
-  # services.xserver.videoDrivers = [ "nvidia" ];
-  # hardware = {
-  #   # video.hidpi.enable = true;
-  #   nvidia = {
-  #     modesetting.enable = true;
-  #     package = config.boot.kernelPackages.nvidiaPackages.beta;
-  #   };
-  # };
 }

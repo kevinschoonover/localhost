@@ -136,7 +136,8 @@ in
   '';
 
   environment.interactiveShellInit = ''
-    export PATH=$PATH:~/go/bin:~/.yarn/bin/
+    export PATH=$PATH:~/go/bin:~/.yarn/bin/:~/.local/share/pnpm
+    export BROWSER=google-chrome-stable
     alias grep="rg"
     alias rb="sudo nixos-rebuild switch"
     alias cat="bat"
@@ -235,11 +236,13 @@ in
     # gui 
     altair # graphql client
     insomnia # rest client
-    minecraft
+    unstable.minecraft
+    unstable.polymc
     firefox
     firefox-devedition-bin
     google-chrome
     unstable.discord
+    unstable.wf-recorder
 
     spotify
 
@@ -250,10 +253,10 @@ in
 
     # programming languages 
     gnumake
-    unstable.go_1_18
+    unstable.go_1_19
     unstable.air # golang auto rebuilder
     unstable.delve # golang debugger
-    unstable.poetry
+    # poetry
     # pnpm
     unstable.nodejs
     unstable.yarn
@@ -313,13 +316,13 @@ in
         luafile /home/kschoon/.config/nvim/lua/init.lua
       '';
       packages.nix.start = with pkgs.vimPlugins; [
-        # (nvim-treesitter.withPlugins (plugins: unstable.tree-sitter.allGrammars))
-        nvim-treesitter
-        nvim-treesitter-textobjects
+        (unstable.vimPlugins.nvim-treesitter.withPlugins (plugins: unstable.tree-sitter.allGrammars))
+        # unstable.vimPlugins.nvim-treesitter
+        unstable.vimPlugins.nvim-treesitter-textobjects
         vim-fugitive
         vim-rhubarb
         vim-commentary
-        vim-gutentags
+        unstable.vimPlugins.vim-gutentags
         telescope-nvim
         onedark-vim
         lightline-vim

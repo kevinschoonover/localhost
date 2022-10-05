@@ -51,5 +51,17 @@ in
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "21.11"; # Did you read the comment?
+
+  hardware.bluetooth.enable = true;
+  hardware.xpadneo.enable = true;
+  services.blueman.enable = true;
+  services.xserver.videoDrivers = [ "nvidia" ];
+  hardware = {
+    # video.hidpi.enable = true;
+    nvidia = {
+      modesetting.enable = true;
+      package = config.boot.kernelPackages.nvidiaPackages.beta;
+    };
+  };
 }
 
