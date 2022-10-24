@@ -237,9 +237,9 @@ in
     altair # graphql client
     insomnia # rest client
     unstable.minecraft
-    unstable.polymc
-    firefox
-    firefox-devedition-bin
+    unstable.prismlauncher
+    # firefox
+    # firefox-devedition-bin
     google-chrome
     unstable.discord
     unstable.wf-recorder
@@ -257,6 +257,7 @@ in
     unstable.air # golang auto rebuilder
     unstable.delve # golang debugger
     # poetry
+    pkgs.python39Packages.poetry
     # pnpm
     unstable.nodejs
     unstable.yarn
@@ -322,7 +323,7 @@ in
         vim-fugitive
         vim-rhubarb
         vim-commentary
-        unstable.vimPlugins.vim-gutentags
+        # unstable.vimPlugins.vim-gutentags
         telescope-nvim
         onedark-vim
         lightline-vim

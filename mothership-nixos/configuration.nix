@@ -63,5 +63,7 @@ in
       package = config.boot.kernelPackages.nvidiaPackages.beta;
     };
   };
+
+  hardware.openrazer.enable = true;
 }
 
