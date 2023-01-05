@@ -200,14 +200,15 @@ in
     # cli 
     jq
     vim
-    tmux
+    unstable.tmux
     wget
     htop
-    git
-    gh
-    ripgrep
-    exa
-    bat
+    unstable.git
+    unstable.gh
+    unstable.ripgrep
+    unstable.fd
+    unstable.exa
+    unstable.bat
     unstable.croc
     step-cli
     unstable.nomad_1_3
@@ -241,6 +242,7 @@ in
     # firefox
     # firefox-devedition-bin
     google-chrome
+    google-chrome-dev
     unstable.discord
     unstable.wf-recorder
 
@@ -264,18 +266,22 @@ in
     gcc
     tree-sitter
     ctags
-    cargo
+    # cargo
     binutils
     unstable.wrangler
     unstable.rustup
 
     # lsps
+    unstable.rust-analyzer
+    unstable.ansible-language-server
     unstable.gopls
+    unstable.marksman
     unstable.gotools
     unstable.terraform-lsp
     unstable.pyright
     unstable.stylua
     unstable.efm-langserver
+    unstable.rust-analyzer
     unstable.sumneko-lua-language-server
     unstable.pkgs.nodePackages.prettier
     unstable.nodePackages.eslint_d
@@ -317,31 +323,31 @@ in
         luafile /home/kschoon/.config/nvim/lua/init.lua
       '';
       packages.nix.start = with pkgs.vimPlugins; [
-        (unstable.vimPlugins.nvim-treesitter.withPlugins (plugins: unstable.tree-sitter.allGrammars))
+        # (unstable.vimPlugins.nvim-treesitter.withPlugins (plugins: unstable.tree-sitter.allGrammars))
         # unstable.vimPlugins.nvim-treesitter
-        unstable.vimPlugins.nvim-treesitter-textobjects
-        vim-fugitive
-        vim-rhubarb
-        vim-commentary
+        # unstable.vimPlugins.nvim-treesitter-textobjects
+        # vim-fugitive
+        # vim-rhubarb
+        # vim-commentary
         # unstable.vimPlugins.vim-gutentags
-        telescope-nvim
-        onedark-vim
-        lightline-vim
-        indent-blankline-nvim
-        gitsigns-nvim
-        plenary-nvim
+        # telescope-nvim
+        # onedark-vim
+        # lightline-vim
+        # indent-blankline-nvim
+        # gitsigns-nvim
+        # plenary-nvim
 
-        nvim-lspconfig
+        # nvim-lspconfig
 
-        # completion
-        cmp-nvim-lsp
-        cmp-buffer
-        cmp-path
-        cmp-cmdline
-        nvim-cmp
-        cmp_luasnip
-        luasnip
-        lsp_signature-nvim
+        # # completion
+        # cmp-nvim-lsp
+        # cmp-buffer
+        # cmp-path
+        # cmp-cmdline
+        # nvim-cmp
+        # cmp_luasnip
+        # luasnip
+        # lsp_signature-nvim
       ];
     };
   };
