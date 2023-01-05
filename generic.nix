@@ -136,6 +136,10 @@ in
   '';
 
   environment.interactiveShellInit = ''
+    # pnpm
+    export PNPM_HOME="~/.local/share/pnpm"
+    export PATH="$PNPM_HOME:$PATH"
+    # pnpm end
     export PATH=$PATH:~/go/bin:~/.yarn/bin/:~/.local/share/pnpm
     export BROWSER=google-chrome-stable
     alias grep="rg"
@@ -270,12 +274,14 @@ in
     binutils
     unstable.wrangler
     unstable.rustup
+    unstable.ansible
+    unstable.ansible-lint
 
     # lsps
     unstable.rust-analyzer
     unstable.ansible-language-server
     unstable.gopls
-    unstable.marksman
+    # unstable.marksman
     unstable.gotools
     unstable.terraform-lsp
     unstable.pyright
@@ -287,11 +293,10 @@ in
     unstable.nodePackages.eslint_d
     unstable.nodePackages.json-server
     unstable.nodePackages.diagnostic-languageserver
-    unstable.nodePackages.vscode-css-languageserver-bin
-    unstable.nodePackages.vscode-html-languageserver-bin
     unstable.nodePackages.dockerfile-language-server-nodejs
     unstable.nodePackages.bash-language-server
     unstable.nodePackages.typescript-language-server
+    unstable.nodePackages.vscode-langservers-extracted
     unstable.rnix-lsp
   ];
   virtualisation.docker.enable = true;

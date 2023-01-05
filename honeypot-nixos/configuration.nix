@@ -11,7 +11,8 @@
       <nixos-hardware/dell/xps/13-9380>
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./generic.nix
+      # byproduct of using the symlinking method
+      ../generic.nix
     ];
 
   networking.hostName = "honeypot"; # Define your hostname.
