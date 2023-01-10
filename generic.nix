@@ -142,6 +142,8 @@ in
     # pnpm end
     export PATH=$PATH:~/go/bin:~/.yarn/bin/:~/.local/share/pnpm
     export BROWSER=google-chrome-stable
+    alias vim="nvim"
+    alias update="sudo nix-channel --update nixos && sudo nix-channel --update nixos-unstable && sudo nixos-rebuild switch --upgrade"
     alias grep="rg"
     alias rb="sudo nixos-rebuild switch"
     alias cat="bat"
@@ -281,7 +283,7 @@ in
     unstable.rust-analyzer
     unstable.ansible-language-server
     unstable.gopls
-    # unstable.marksman
+    unstable.marksman
     unstable.gotools
     unstable.terraform-lsp
     unstable.pyright
@@ -298,6 +300,8 @@ in
     unstable.nodePackages.typescript-language-server
     unstable.nodePackages.vscode-langservers-extracted
     unstable.rnix-lsp
+
+    unstable.neovim
   ];
   virtualisation.docker.enable = true;
   virtualisation.docker.autoPrune.enable = true;
@@ -317,45 +321,7 @@ in
   hardware.pulseaudio.support32Bit = true;
   hardware.steam-hardware.enable = true;
 
-  programs.neovim = {
-    enable = true;
-    package = unstable.neovim-unwrapped;
-    viAlias = true;
-    vimAlias = true;
 
-    configure = {
-      customRC = ''
-        luafile /home/kschoon/.config/nvim/lua/init.lua
-      '';
-      packages.nix.start = with pkgs.vimPlugins; [
-        # (unstable.vimPlugins.nvim-treesitter.withPlugins (plugins: unstable.tree-sitter.allGrammars))
-        # unstable.vimPlugins.nvim-treesitter
-        # unstable.vimPlugins.nvim-treesitter-textobjects
-        # vim-fugitive
-        # vim-rhubarb
-        # vim-commentary
-        # unstable.vimPlugins.vim-gutentags
-        # telescope-nvim
-        # onedark-vim
-        # lightline-vim
-        # indent-blankline-nvim
-        # gitsigns-nvim
-        # plenary-nvim
-
-        # nvim-lspconfig
-
-        # # completion
-        # cmp-nvim-lsp
-        # cmp-buffer
-        # cmp-path
-        # cmp-cmdline
-        # nvim-cmp
-        # cmp_luasnip
-        # luasnip
-        # lsp_signature-nvim
-      ];
-    };
-  };
   programs.gnupg.agent = {
     enable = true;
     enableSSHSupport = true;

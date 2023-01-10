@@ -14,7 +14,8 @@ in
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      ./generic.nix
+      # byproduct of using symlinks
+      ../generic.nix
     ];
 
   # Minimal list of modules to use the EFI system partition and the YubiKey + nouveau
