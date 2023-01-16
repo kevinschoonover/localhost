@@ -214,6 +214,7 @@ in
     unstable.ripgrep
     unstable.fd
     unstable.exa
+    unstable.delta
     unstable.bat
     unstable.croc
     step-cli
