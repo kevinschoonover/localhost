@@ -361,4 +361,5 @@ in
   };
 
   services.tailscale.enable = true;
+  services.tailscale.package = unstable.tailscale;
 }
