@@ -281,6 +281,7 @@ in
     unstable.ansible-lint
 
     # lsps
+    unstable.taplo-cli
     unstable.rust-analyzer
     unstable.ansible-language-server
     unstable.gopls
