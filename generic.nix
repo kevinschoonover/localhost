@@ -137,16 +137,16 @@ in
       # exec ${pkgs.kanshi}/bin/kanshi 2>&1 ~/.kanshi.log
     fi
   '';
-
+  environment.sessionVariables.DEFAULT_BROWSER = "${pkgs.google-chrome}/bin/google-chrome-stable";
   environment.interactiveShellInit = ''
     # pnpm
     export PNPM_HOME="~/.local/share/pnpm"
     export PATH="$PNPM_HOME:$PATH"
     # pnpm end
     export PATH=$PATH:~/go/bin:~/.yarn/bin/:~/.local/share/pnpm
-    export BROWSER=google-chrome-stable
+    export BROWSER=${pkgs.google-chrome}/bin/google-chrome-stable
     alias vim="nvim"
-    alias update="sudo nix-channel --update nixos && sudo nix-channel --update nixos-unstable && sudo nixos-rebuild switch --upgrade"
+    alias update="sudo nix-channel --update nixos && sudo nix-channel --update nixos-unstable && sudo nix-channel --update nixos-hardware && sudo nixos-rebuild switch --upgrade"
     alias grep="rg"
     alias rb="sudo nixos-rebuild switch"
     alias cat="bat"
@@ -224,7 +224,9 @@ in
     unstable.bat
     unstable.croc
     step-cli
-    unstable.nomad_1_3
+    unstable.nomad_1_4
+    unstable.pscale
+    # unstable.mysql80
     unstable.consul
     unstable.consul-template
     unstable.envconsul
@@ -268,7 +270,7 @@ in
 
     # programming languages 
     gnumake
-    unstable.go_1_19
+    unstable.go_1_20
     unstable.air # golang auto rebuilder
     unstable.delve # golang debugger
     # poetry
@@ -305,6 +307,7 @@ in
     unstable.nodePackages.diagnostic-languageserver
     unstable.nodePackages.dockerfile-language-server-nodejs
     unstable.nodePackages.bash-language-server
+    unstable.nodePackages.yaml-language-server
     unstable.nodePackages.typescript-language-server
     unstable.nodePackages.vscode-langservers-extracted
     unstable.rnix-lsp
@@ -312,6 +315,7 @@ in
     unstable.neovim
   ];
   virtualisation.docker.enable = true;
+  virtualisation.docker.package = unstable.docker;
   virtualisation.docker.autoPrune.enable = true;
 
   security.pam.yubico = {
