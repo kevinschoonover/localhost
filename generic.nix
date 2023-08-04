@@ -224,13 +224,13 @@ in
     unstable.bat
     unstable.croc
     step-cli
-    unstable.nomad_1_4
     unstable.pscale
     # unstable.mysql80
+    unstable.nomad_1_6
     unstable.consul
     unstable.consul-template
     unstable.envconsul
-    vault
+    unstable.vault
     unstable.pulumi-bin
     dogdns
     unstable.packer
@@ -273,8 +273,8 @@ in
     unstable.go_1_20
     unstable.air # golang auto rebuilder
     unstable.delve # golang debugger
-    # poetry
-    pkgs.python39Packages.poetry
+    unstable.poetry
+    # pkgs.python39Packages.poetry
     # pnpm
     unstable.nodejs
     unstable.yarn
