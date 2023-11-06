@@ -1,7 +1,6 @@
 { config, pkgs, lib, ... }:
 
 let
-  unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
   # TODO: does not work during install because tailscale is not initialized
   # + you need certificate to even be able to access it
   internalCA = builtins.readFile (builtins.fetchurl {
@@ -104,6 +103,21 @@ in
     alsa.enable = true;
     pulse.enable = true;
     jack.enable = true;
+
+    # media-session.config.alsa-monitor = {
+    #   rules = [
+    #     {
+    #       matches = [{ "node.name" = "alsa_output.*"; }];
+    #       actions = {
+    #         update-props = {
+    #           "api.acp.auto-port" = false;
+    #           "api.acp.auto-profile" = false;
+    #           "api.alsa.use-acp" = false;
+    #         };
+    #       };
+    #     }
+    #   ];
+    # };
   };
 
   xdg = {
@@ -311,7 +325,7 @@ in
     unstable.neovim
   ];
   virtualisation.docker.enable = true;
-  virtualisation.docker.package = unstable.docker;
+  virtualisation.docker.package = pkgs.unstable.docker;
   virtualisation.docker.autoPrune.enable = true;
 
   security.pam.yubico = {
@@ -368,5 +382,5 @@ in
   };
 
   services.tailscale.enable = true;
-  services.tailscale.package = unstable.tailscale;
+  services.tailscale.package = pkgs.unstable.tailscale;
 }
