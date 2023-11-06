@@ -350,7 +350,7 @@ in
   };
   programs.sway = {
     enable = true;
-    package = unstable.sway;
+    package = pkgs.unstable.sway;
     extraPackages = with pkgs; [
       xdg-utils
       swaylock
