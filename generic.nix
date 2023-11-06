@@ -16,6 +16,7 @@ in
 
   # optimize the nixstore by symlinking identically derivations
   nix.settings.auto-optimise-store = true;
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
   # periodically trim the SSD
   services.fstrim.enable = true;
   # automatically garbage collect the nix store
@@ -325,7 +326,7 @@ in
   };
   programs.sway = {
     enable = true;
-    package = pkgs.unstable.sway;
+    package = unstable.sway;
     extraPackages = with pkgs; [
       xdg-utils
       swaylock
