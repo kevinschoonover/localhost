@@ -2,17 +2,15 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ inputs, config, pkgs, ... }:
 
 {
   imports =
     [
       # https://github.com/NixOS/nixos-hardware
-      <nixos-hardware/dell/xps/13-9380>
+      inputs.nixos-hardware.dell-xps-13-9300
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      # byproduct of using the symlinking method
-      ../generic.nix
     ];
 
   networking.hostName = "honeypot"; # Define your hostname.

@@ -1,21 +1,10 @@
 { config, pkgs, lib, ... }:
 
-let
-  unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
-  # TODO: does not work during install because tailscale is not initialized
-  # + you need certificate to even be able to access it
-  # internalCA = builtins.readFile (builtins.fetchurl {
-  #   url = "https://vault.prod.stratos.host:8200/v1/internal/ca/pem";
-  #   sha256 = "185ca789ca9d680c92a7e749bbf8612a4802c2278487caf38655b1870478824a";
-  # });
-in
 {
   imports =
     [
       # Include the results of the hardware scan.
       ./hardware-configuration.nix
-      # byproduct of using symlinks
-      ../generic.nix
     ];
 
   # Minimal list of modules to use the EFI system partition and the YubiKey + nouveau
