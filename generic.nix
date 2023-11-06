@@ -15,7 +15,7 @@ in
   boot.initrd.luks.yubikeySupport = true;
 
   # optimize the nixstore by symlinking identically derivations
-  nix.autoOptimiseStore = true;
+  nix.settings.auto-optimise-store = true;
   # periodically trim the SSD
   services.fstrim.enable = true;
   # automatically garbage collect the nix store
@@ -96,21 +96,6 @@ in
     alsa.enable = true;
     pulse.enable = true;
     jack.enable = true;
-
-    media-session.config.alsa-monitor = {
-      rules = [
-        {
-          matches = [{ "node.name" = "alsa_output.*"; }];
-          actions = {
-            update-props = {
-              "api.acp.auto-port" = false;
-              "api.acp.auto-profile" = false;
-              "api.alsa.use-acp" = false;
-            };
-          };
-        }
-      ];
-    };
   };
 
   xdg = {
@@ -121,7 +106,7 @@ in
         pkgs.xdg-desktop-portal-gtk
         pkgs.xdg-desktop-portal-wlr
       ];
-      gtkUsePortal = true;
+      # gtkUsePortal = true;
     };
   };
 
@@ -133,7 +118,7 @@ in
 
   environment.loginShellInit = ''
     if [ "$(tty)" = "/dev/tty1" ]; then
-      exec sway --my-next-gpu-wont-be-nvidia >> ~/.sway.log 2>&1 
+      exec sway --unsupported-gpu >> ~/.sway.log 2>&1 
       # exec ${pkgs.kanshi}/bin/kanshi 2>&1 ~/.kanshi.log
     fi
   '';
@@ -150,7 +135,7 @@ in
     alias grep="rg"
     alias rb="sudo nixos-rebuild switch"
     alias cat="bat"
-    alias ls="exa"
+    alias ls="eza"
     alias tb="cd ~/git-local/bloominlabs/hostin-proj/test-bed"
     alias sse="source ~/.stratos/creds.sh && source ~/.stratos/setup_env.sh"
     alias blssh="vault ssh -host-key-mount-point=ssh-infra-host -mount-point=ssh-infra-client -role=root -mode=ca"
@@ -219,7 +204,7 @@ in
     unstable.gh
     unstable.ripgrep
     unstable.fd
-    unstable.exa
+    unstable.eza
     unstable.delta
     unstable.bat
     unstable.croc
@@ -283,7 +268,7 @@ in
     ctags
     # cargo
     binutils
-    unstable.wrangler
+    # unstable.wrangler
     unstable.rustup
     unstable.ansible
     unstable.ansible-lint
@@ -340,6 +325,7 @@ in
   };
   programs.sway = {
     enable = true;
+    package = pkgs.unstable.sway;
     extraPackages = with pkgs; [
       xdg-utils
       swaylock
@@ -361,8 +347,7 @@ in
   location.longitude = 122.3;
   services.redshift = {
     enable = true;
-    # Redshift with wayland support isn't present in nixos-19.09 atm. You have to cherry-pick the commit from https://github.com/NixOS/nixpkgs/pull/68285 to do that.
-    package = pkgs.redshift-wlr;
+    package = pkgs.gammastep;
   };
 
   programs.waybar.enable = true;
