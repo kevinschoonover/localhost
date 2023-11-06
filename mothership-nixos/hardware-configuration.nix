@@ -13,6 +13,19 @@
   boot.initrd.kernelModules = [ "dm-snapshot" ];
   boot.kernelModules = [ "kvm-amd" ];
   boot.extraModulePackages = [ ];
+  boot.kernelParams = [
+      # HACK Disables fixes for spectre, meltdown, L1TF and a number of CPU
+      #      vulnerabilities. Don't copy this blindly! And especially not for
+      #      mission critical or server/headless builds exposed to the world.
+      "mitigations=off"
+  ];
+  # Refuse ICMP echo requests on my desktop/laptop; nobody has any business
+  # pinging them, unlike my servers.
+  boot.kernel.sysctl."net.ipv4.icmp_echo_ignore_broadcasts" = 1;
+
+  nix.settings.max-jobs = lib.mkDefault 6;
+  powerManagement.cpuFreqGovernor = "performance";
+  hardware.cpu.amd.updateMicrocode = true;
 
   fileSystems."/" =
     {
@@ -28,6 +41,4 @@
 
   swapDevices =
     [{ device = "/dev/disk/by-uuid/dd5f2975-7f94-4149-848d-d8d4e66f63f6"; }];
-
-  hardware.cpu.amd.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }
