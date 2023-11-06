@@ -40,7 +40,7 @@ in
     XDG_CURRENT_DESKTOP = "sway"; # https://github.com/emersion/xdg-desktop-portal-wlr/issues/20
     XDG_SESSION_TYPE = "wayland"; # https://github.com/emersion/xdg-desktop-portal-wlr/pull/11
     WLR_NO_HARDWARE_CURSORS = "1";
-    # WLR_RENDERER = "vulkan";
+    WLR_RENDERER = "vulkan";
   };
 
   # firmware updated
@@ -352,18 +352,18 @@ in
     enable = true;
     package = pkgs.unstable.sway;
     extraPackages = with pkgs; [
-      xdg-utils
-      swaylock
-      swayidle
-      waybar
-      wl-clipboard
-      mako
-      alacritty
-      dmenu
-      bemenu
-      grim
-      slurp
-      kanshi
+      unstable.xdg-utils
+      unstable.swaylock
+      unstable.swayidle
+      unstable.waybar
+      unstable.wl-clipboard
+      unstable.mako
+      unstable.alacritty
+      unstable.dmenu
+      unstable.bemenu
+      unstable.grim
+      unstable.slurp
+      unstable.kanshi
     ];
   };
 
