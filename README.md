@@ -4,57 +4,41 @@
 
 Personal dotfiles / installation instructure for my personal setup using NixOS.
 
-## Pre-Install Commands
+## Usage
+### Flashing the ISO
+1. download the [nixos iso](https://nixos.org/download)
 
-<https://nixos.wiki/wiki/Yubikey_based_Full_Disk_Encryption_(FDE)_on_NixOS>
+2. flash the image
+    ```bash
+    sudo dd if=<input_file> of=<device_name> status=progress bs=4096 
+    sync
+    ```
+
+### Machine setup
+#### Formatting the drive
 
 ```bash
-ykpersonalize -2 -ochal-resp -ochal-hmac
-sudo parted -s /dev/nvme0n1 mklabel gpt
-sudo parted -s /dev/sda mkpart primary 2048s 2MiB
-sudo parted -s /dev/nvme0n1 mkpart primary 2048s 2MiB
-sudo parted -s /dev/nvme0n1 set 1 bios_grub on
-sudo parted -s /dev/nvme0n1 mkpart primary fat32 2MiB 515MiB
-sudo parted -s /dev/nvme0n1 set 2 boot on
-sudo parted -s /dev/nvme0n1 set 2 esp on
-sudo parted -s /dev/nvme0n1 mkpart primary 540MiB 100%
-SALT_LENGTH=16
-SALT="$(dd if=/dev/random bs=1 count=$SALT_LENGTH 2>/dev/null | rbtohex)"
-CHALLENGE="$(echo -n $SALT | openssl dgst -binary -sha512 | rbtohex)"
-RESPONSE=$(ykchalresp -2 -x $CHALLENGE 2>/dev/null)
-KEY_LENGTH=512
-ITERATIONS=1000000
-LUKS_KEY="$(echo | pbkdf2-sha512 $(($KEY_LENGTH / 8)) $ITERATIONS $RESPONSE | rbtohex)"
-CIPHER=aes-xts-plain64
-HASH=sha512
-echo -n "$LUKS_KEY" | hextorb | sudo cryptsetup luksFormat --cipher="$CIPHER" --key-size="$KEY_LENGTH" --hash="$HASH" --key-file=- /dev/nvme0n1p3
-mkfs.fat -F32 /dev/nvme0n1p2
-sudo mkfs.fat -F32 /dev/nvme0n1p2
-sudo mkdir -p /mnt/boot/
-sudo mount /dev/nvme0n1p2 /mnt/boot/
-sudo echo -ne "$SALT\n$ITERATIONS" > /mnt/boot/crypt-storage/default
-echo -n "$LUKS_KEY" | hextorb | sudo cryptsetup open /dev/nvme0n1p3 encrypted --key-file=-
-pvcreate /dev/mapper/encrypted
-sudo pvcreate /dev/mapper/encrypted
-sudo vgcreate vg1 /dev/mapper/encrypted
-sudo lvcreate -L 8G vg1 -n swap
-sudo lvcreate -l +100%FREE vg1 -n root
-sudo lvdisplay
-sudo mkfs.ext4 -L nixos /dev/mapper/vg1-root
-sudo mkswap -L swap /dev/mapper/vg1-swap
-sudo mount /dev/mapper/vg1-root /mnt/
-sudo mkdir -p /mnt/boot
-sudo mount /dev/nvme0n1p2 /mnt/boot/
-sudo swapon /dev/mapper/vg1-swap
-sudo mount /dev/mapper/vg1-root /mnt/
-sudo mount /dev/nvme0n1p2 /mnt/boot/
-sudo nixos-generate-config --root /mnt/
+DRIVE=/dev/nvme0n1
+parted $DRIVE -- mklabel gpt
+parted $DRIVE -- mkpart ESP fat32 1MiB 512MiB
+parted $DRIVE -- mkpart primary linux-swap 512MiB 8.5GiB
+parted $DRIVE -- mkpart primary 8.5GiB 100%
+parted $DRIVE -- set 1 boot on
+mkfs.fat -F32 -n BOOT ${DRIVE}p1
+mkswap -L swap ${DRIVE}p2
+mkfs.ext4 -L nixos ${DRIVE}p3
 ```
 
-## Post Install
+#### Installing
+```bash
+DRIVE=/dev/nvme0n1
+mount ${DRIVE}p3 /mnt
+mkdir -p /mnt/boot
+mount ${DRIVE}p1 /mnt/boot
+swapon ${DRIVE}p2
 
-1. [register yubikey for login](https://nixos.wiki/wiki/Yubikey#Logging-in)
-2. symlink dotfiles
+sudo nixos-generate-config --root /mnt/
+```
 
 ## Resources
 
