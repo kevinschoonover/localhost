@@ -153,7 +153,7 @@ in
     export PATH=$PATH:~/go/bin:~/.yarn/bin/:~/.local/share/pnpm
     export BROWSER=${pkgs.google-chrome}/bin/google-chrome-stable
     alias vim="nvim"
-    alias update="sudo nix-channel --update nixos && sudo nix-channel --update nixos-unstable && sudo nix-channel --update nixos-hardware && sudo nixos-rebuild switch --upgrade"
+    alias update="pushd ~/git-local/kevinschoonover/localhost && nix flake update --commit-lock-file; popd && sudo nixos-rebuild switch"
     alias grep="rg"
     alias rb="sudo nixos-rebuild switch"
     alias cat="bat"
