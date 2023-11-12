@@ -18,6 +18,7 @@
     , nixpkgs
     , nixpkgs-unstable
     , nixpkgs-wayland
+    , nixos-hardware
     , ...
     } @ inputs:
     let

@@ -40,6 +40,9 @@ swapon ${DRIVE}p2
 sudo nixos-generate-config --root /mnt/
 ```
 
+### Passwordless sudo
+[docs](https://nixos.wiki/wiki/Yubikey#yubico-pam)
+
 ## Resources
 
 1. <https://nixos.wiki/wiki/Nixpkgs/Create_and_debug_packages>

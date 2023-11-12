@@ -332,6 +332,10 @@ in
     enable = true;
     debug = false;
     mode = "challenge-response";
+    # 1. primary yubikey
+    # 2. backup yubikey
+    # 3. keychain yubikey
+    id = [ "14403606" "11584605" "15202067" ];
   };
   security.pam.yubico.control = "sufficient";
 
