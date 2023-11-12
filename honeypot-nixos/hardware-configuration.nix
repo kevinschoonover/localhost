@@ -5,29 +5,48 @@
 
 {
   imports =
-    [
-      (modulesPath + "/installer/scan/not-detected.nix")
+    [ (modulesPath + "/installer/scan/not-detected.nix")
     ];
 
   boot.initrd.availableKernelModules = [ "xhci_pci" "nvme" "usbhid" "usb_storage" "sd_mod" "rtsx_pci_sdmmc" ];
+  boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ "kvm-intel" ];
   boot.extraModulePackages = [ ];
+  boot.kernelParams = [
+      # HACK Disables fixes for spectre, meltdown, L1TF and a number of CPU
+      #      vulnerabilities. Don't copy this blindly! And especially not for
+      #      mission critical or server/headless builds exposed to the world.
+      "mitigations=off"
+  ];
+  # Refuse ICMP echo requests on my desktop/laptop; nobody has any business
+  # pinging them, unlike my servers.
+  boot.kernel.sysctl."net.ipv4.icmp_echo_ignore_broadcasts" = 1;
 
-  fileSystems."/boot" =
-    {
-      device = "/dev/disk/by-uuid/15B3-579B";
-      fsType = "vfat";
-    };
+  nix.settings.max-jobs = lib.mkDefault 6;
 
   fileSystems."/" =
-    {
-      device = "/dev/disk/by-uuid/7bb3b083-3701-46d1-8085-4bb83c61a3ff";
+    { device = "/dev/disk/by-label/nixos";
       fsType = "ext4";
     };
 
-  swapDevices =
-    [{ device = "/dev/disk/by-uuid/447860dc-7abd-4011-9d6d-d950aee5b4db"; }];
+  fileSystems."/boot" =
+    { device = "/dev/disk/by-label/BOOT";
+      fsType = "vfat";
+    };
 
+  swapDevices =
+    [ { device = "/dev/disk/by-label/swap"; }
+    ];
+
+  # Enables DHCP on each ethernet and wireless interface. In case of scripted networking
+  # (the default) this is the recommended approach. When using systemd-networkd it's
+  # still possible to use this option, but it's recommended to use it in conjunction
+  # with explicit per-interface declarations with `networking.interfaces.<interface>.useDHCP`.
+  networking.useDHCP = lib.mkDefault true;
+  # networking.interfaces.enp57s0u2u3.useDHCP = lib.mkDefault true;
+  # networking.interfaces.wlp2s0.useDHCP = lib.mkDefault true;
+
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   powerManagement.cpuFreqGovernor = lib.mkDefault "powersave";
   hardware.cpu.intel.updateMicrocode = lib.mkDefault config.hardware.enableRedistributableFirmware;
 }

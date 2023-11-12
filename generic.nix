@@ -1,7 +1,6 @@
 { config, pkgs, lib, ... }:
 
 let
-  unstable = import <nixos-unstable> { config = { allowUnfree = true; }; };
   # TODO: does not work during install because tailscale is not initialized
   # + you need certificate to even be able to access it
   internalCA = builtins.readFile (builtins.fetchurl {
@@ -14,9 +13,16 @@ in
   # Enable support for the YubiKey PBA
   boot.initrd.luks.yubikeySupport = true;
 
-  # optimize the nixstore by symlinking identically derivations
-  nix.settings.auto-optimise-store = true;
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+  nix = {
+    package = pkgs.nixFlakes;
+    settings.experimental-features = [ "nix-command" "flakes" ];
+    # optimize the nixstore by symlinking identically derivations
+    settings.auto-optimise-store = true;
+    extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
+  };
+
   # periodically trim the SSD
   services.fstrim.enable = true;
   # automatically garbage collect the nix store
@@ -34,7 +40,7 @@ in
     XDG_CURRENT_DESKTOP = "sway"; # https://github.com/emersion/xdg-desktop-portal-wlr/issues/20
     XDG_SESSION_TYPE = "wayland"; # https://github.com/emersion/xdg-desktop-portal-wlr/pull/11
     WLR_NO_HARDWARE_CURSORS = "1";
-    # WLR_RENDERER = "vulkan";
+    WLR_RENDERER = "vulkan";
   };
 
   # firmware updated
@@ -97,6 +103,21 @@ in
     alsa.enable = true;
     pulse.enable = true;
     jack.enable = true;
+
+    # media-session.config.alsa-monitor = {
+    #   rules = [
+    #     {
+    #       matches = [{ "node.name" = "alsa_output.*"; }];
+    #       actions = {
+    #         update-props = {
+    #           "api.acp.auto-port" = false;
+    #           "api.acp.auto-profile" = false;
+    #           "api.alsa.use-acp" = false;
+    #         };
+    #       };
+    #     }
+    #   ];
+    # };
   };
 
   xdg = {
@@ -123,7 +144,7 @@ in
       # exec ${pkgs.kanshi}/bin/kanshi 2>&1 ~/.kanshi.log
     fi
   '';
-  environment.sessionVariables.DEFAULT_BROWSER = "${pkgs.google-chrome}/bin/google-chrome-stable";
+  environment.sessionVariables.DEFAULT_BROWSER = "google-chrome-stable";
   environment.interactiveShellInit = ''
     # pnpm
     export PNPM_HOME="~/.local/share/pnpm"
@@ -132,7 +153,7 @@ in
     export PATH=$PATH:~/go/bin:~/.yarn/bin/:~/.local/share/pnpm
     export BROWSER=${pkgs.google-chrome}/bin/google-chrome-stable
     alias vim="nvim"
-    alias update="sudo nix-channel --update nixos && sudo nix-channel --update nixos-unstable && sudo nix-channel --update nixos-hardware && sudo nixos-rebuild switch --upgrade"
+    alias update="pushd ~/git-local/kevinschoonover/localhost && nix flake update --commit-lock-file; popd && sudo nixos-rebuild switch"
     alias grep="rg"
     alias rb="sudo nixos-rebuild switch"
     alias cat="bat"
@@ -212,7 +233,7 @@ in
     step-cli
     unstable.pscale
     # unstable.mysql80
-    unstable.nomad_1_6
+    # unstable.nomad_1_6
     unstable.consul
     unstable.consul-template
     unstable.envconsul
@@ -222,6 +243,9 @@ in
     unstable.packer
     unstable.google-cloud-sdk
     unstable.helix
+
+    unstable.openssl
+    unstable.openssl.dev
 
     # passwords
     bitwarden
@@ -239,7 +263,7 @@ in
     altair # graphql client
     insomnia # rest client
     unstable.minecraft
-    unstable.prismlauncher
+    # unstable.prismlauncher
     # firefox
     # firefox-devedition-bin
     google-chrome
@@ -256,7 +280,7 @@ in
 
     # programming languages 
     gnumake
-    unstable.go_1_20
+    unstable.go
     unstable.air # golang auto rebuilder
     unstable.delve # golang debugger
     unstable.poetry
@@ -277,9 +301,9 @@ in
     # lsps
     unstable.taplo-cli
     unstable.rust-analyzer
-    unstable.ansible-language-server
+    # unstable.lsp-ansible
     unstable.gopls
-    unstable.marksman
+    # unstable.marksman
     unstable.gotools
     unstable.terraform-lsp
     unstable.pyright
@@ -301,13 +325,17 @@ in
     unstable.neovim
   ];
   virtualisation.docker.enable = true;
-  virtualisation.docker.package = unstable.docker;
+  virtualisation.docker.package = pkgs.unstable.docker;
   virtualisation.docker.autoPrune.enable = true;
 
   security.pam.yubico = {
     enable = true;
     debug = false;
     mode = "challenge-response";
+    # 1. primary yubikey
+    # 2. backup yubikey
+    # 3. keychain yubikey
+    id = [ "14403606" "11584605" "15202067" ];
   };
   security.pam.yubico.control = "sufficient";
 
@@ -326,20 +354,20 @@ in
   };
   programs.sway = {
     enable = true;
-    package = unstable.sway;
+    package = pkgs.unstable.sway;
     extraPackages = with pkgs; [
-      xdg-utils
-      swaylock
-      swayidle
-      waybar
-      wl-clipboard
-      mako
-      alacritty
-      dmenu
-      bemenu
-      grim
-      slurp
-      kanshi
+      unstable.xdg-utils
+      unstable.swaylock
+      unstable.swayidle
+      unstable.waybar
+      unstable.wl-clipboard
+      unstable.mako
+      unstable.alacritty
+      unstable.dmenu
+      unstable.bemenu
+      unstable.grim
+      unstable.slurp
+      unstable.kanshi
     ];
   };
 
@@ -358,5 +386,5 @@ in
   };
 
   services.tailscale.enable = true;
-  services.tailscale.package = unstable.tailscale;
+  services.tailscale.package = pkgs.unstable.tailscale;
 }

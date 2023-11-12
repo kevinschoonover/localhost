@@ -3,8 +3,6 @@
 hostname=`cat /etc/hostname`
 mkdir -p $hostname-nixos/
 ln -s $(pwd)/generic.nix /etc/nixos/
-ln -s $(pwd)/$hostname-nixos/hardware-configuration.nix /etc/nixos/
-ln -s $(pwd)/$hostname-nixos/configuration.nix /etc/nixos/
-
-git add .
-git commit
+ln -s $(pwd)/flake.nix /etc/nixos/
+ln -s $(pwd)/flake.lock /etc/nixos/
+ln -s $(pwd)/$hostname-nixos/ /etc/nixos/
