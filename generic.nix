@@ -31,10 +31,8 @@ in
     dates = "weekly";
     options = "--delete-older-than 30d";
   };
-  nixpkgs.config.allowUnfree = true;
   system.autoUpgrade.enable = true;
   security.pki.certificates = [ internalCA ];
-  environment.variables.EDITOR = "nvim";
   environment.sessionVariables = {
     MOZ_ENABLE_WAYLAND = "1";
     XDG_CURRENT_DESKTOP = "sway"; # https://github.com/emersion/xdg-desktop-portal-wlr/issues/20
@@ -59,6 +57,7 @@ in
   # ssh - 22 
   # remote buildkit - 8372
   networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 8372 ];
+  networking.firewall.interfaces.wlan0.allowedTCPPorts = [ 8081 19000 ];
 
   networking.networkmanager.enable = true;
   networking.wireless.iwd.enable = true;
@@ -84,7 +83,7 @@ in
   time.timeZone = "America/Vancouver";
 
   fonts = {
-    fonts = with pkgs; [
+    packages = with pkgs; [
       nerdfonts
     ];
   };
@@ -146,8 +145,9 @@ in
   '';
   environment.sessionVariables.DEFAULT_BROWSER = "google-chrome-stable";
   environment.interactiveShellInit = ''
+    eval "$(direnv hook bash)"
     # pnpm
-    export PNPM_HOME="~/.local/share/pnpm"
+    export PNPM_HOME="$HOME/.local/share/pnpm"
     export PATH="$PNPM_HOME:$PATH"
     # pnpm end
     export PATH=$PATH:~/go/bin:~/.yarn/bin/:~/.local/share/pnpm
@@ -163,7 +163,8 @@ in
     alias blssh="vault ssh -host-key-mount-point=ssh-infra-host -mount-point=ssh-infra-client -role=root -mode=ca"
 
     alias discord="exec discord --use-gl=desktop"
-    alias token="export NOMAD_TOKEN=\`vault read --format json nomad/creds/management | jq -r '.data.secret_id'\`"
+    alias login="export VAULT_ADDR="https://vault.prod.stratos.host:8200"; vault login -method=oidc role=developer"
+    alias token="export VAULT_ADDR="https://vault.prod.stratos.host:8200"; export NOMAD_ADDR="http://nomad-servers.prod.stratos.host:4646"; export NOMAD_TOKEN=\`vault read --format json nomad/creds/management | jq -r '.data.secret_id'\`"
 
     function we_are_in_git_work_tree {
      git rev-parse --is-inside-work-tree &> /dev/null
@@ -203,13 +204,23 @@ in
         else pwd | sed -e "s|.*/\(.*/.*\)|\1|"
         fi
     }
+
+    flakify() {
+      if [ ! -e flake.nix ]; then
+        nix flake new -t github:nix-community/nix-direnv .
+      elif [ ! -e .envrc ]; then
+        echo "use flake" > .envrc
+        direnv allow
+      fi
+      ${EDITOR:-vim} flake.nix
+    }
    
     COLBROWN="\[\033[1;33m\]"
     COLRED="\[\033[1;31m\]"
     COLCLEAR="\[\033[0m\]"
    
     # Export all these for subshells
-    export -f parse_git_branch parse_git_status we_are_in_git_work_tree pwd_depth_limit_2
+    export -f parse_git_branch parse_git_status we_are_in_git_work_tree pwd_depth_limit_2 flakify
     export PS1="$COLRED\$(parse_git_status)$COLBROWN\$(parse_git_branch) $COLRED>$COLCLEAR "
   '';
 
@@ -233,7 +244,7 @@ in
     step-cli
     unstable.pscale
     # unstable.mysql80
-    # unstable.nomad_1_6
+    unstable.nomad_1_6
     unstable.consul
     unstable.consul-template
     unstable.envconsul
@@ -258,6 +269,7 @@ in
     pavucontrol
     unzip
     vulkan-tools
+    direnv
 
     # gui 
     altair # graphql client
@@ -267,7 +279,6 @@ in
     # firefox
     # firefox-devedition-bin
     google-chrome
-    google-chrome-dev
     unstable.discord
     unstable.wf-recorder
 
@@ -285,20 +296,20 @@ in
     unstable.delve # golang debugger
     unstable.poetry
     # pkgs.python39Packages.poetry
-    # pnpm
+    unstable.nodePackages.pnpm
     unstable.nodejs
     unstable.yarn
     gcc
-    tree-sitter
+    unstable.tree-sitter
     ctags
     # cargo
     binutils
     # unstable.wrangler
     unstable.rustup
     unstable.ansible
-    unstable.ansible-lint
 
     # lsps
+    unstable.ansible-lint
     unstable.taplo-cli
     unstable.rust-analyzer
     # unstable.lsp-ansible
@@ -310,7 +321,7 @@ in
     unstable.stylua
     unstable.efm-langserver
     unstable.rust-analyzer
-    unstable.sumneko-lua-language-server
+    unstable.lua-language-server
     unstable.pkgs.nodePackages.prettier
     unstable.nodePackages.eslint_d
     unstable.nodePackages.json-server
@@ -321,9 +332,15 @@ in
     unstable.nodePackages.typescript-language-server
     unstable.nodePackages.vscode-langservers-extracted
     unstable.rnix-lsp
-
-    unstable.neovim
   ];
+
+  programs.neovim = {
+    enable = true;
+    defaultEditor = true;
+    package = pkgs.unstable.neovim-unwrapped;
+    viAlias = true;
+    vimAlias = true;
+  };
   virtualisation.docker.enable = true;
   virtualisation.docker.package = pkgs.unstable.docker;
   virtualisation.docker.autoPrune.enable = true;
