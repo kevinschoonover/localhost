@@ -56,8 +56,10 @@ in
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # ssh - 22 
   # remote buildkit - 8372
-  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 8372 ];
-  networking.firewall.interfaces.wlan0.allowedTCPPorts = [ 8081 19000 ];
+  networking.firewall.interfaces.tailscale0.allowedUDPPorts = [ 3000 ];
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 8372 3000 3001 8080 8081 ];
+  networking.firewall.interfaces.wlan0.allowedUDPPorts = [ 8081 19000 3000 3001 ];
+  networking.firewall.interfaces.wlan0.allowedTCPPorts = [ 8081 19000 3000 3001 ];
 
   networking.networkmanager.enable = true;
   networking.wireless.iwd.enable = true;
@@ -281,6 +283,7 @@ in
     google-chrome
     unstable.discord
     unstable.wf-recorder
+    imv
 
     spotify
 
@@ -294,7 +297,7 @@ in
     unstable.go
     unstable.air # golang auto rebuilder
     unstable.delve # golang debugger
-    unstable.poetry
+    poetry
     # pkgs.python39Packages.poetry
     unstable.nodePackages.pnpm
     unstable.nodejs
