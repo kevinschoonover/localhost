@@ -68,6 +68,12 @@
           specialArgs = { inherit inputs outputs; };
           modules = [ ./honeypot-nixos/configuration.nix ./generic.nix ];
         };
+
+        honeypot2 = nixpkgs.lib.nixosSystem {
+          inherit system pkgs;
+          specialArgs = { inherit inputs outputs; };
+          modules = [ ./honeypot2-nixos/configuration.nix ./generic.nix ];
+        };
       };
     };
 }
