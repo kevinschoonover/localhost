@@ -37,8 +37,6 @@ in
     MOZ_ENABLE_WAYLAND = "1";
     XDG_CURRENT_DESKTOP = "sway"; # https://github.com/emersion/xdg-desktop-portal-wlr/issues/20
     XDG_SESSION_TYPE = "wayland"; # https://github.com/emersion/xdg-desktop-portal-wlr/pull/11
-    WLR_NO_HARDWARE_CURSORS = "1";
-    WLR_RENDERER = "vulkan";
   };
 
   # firmware updated
@@ -57,7 +55,7 @@ in
   # ssh - 22 
   # remote buildkit - 8372
   networking.firewall.interfaces.tailscale0.allowedUDPPorts = [ 3000 ];
-  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 8372 3000 3001 8080 8081 ];
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 8372 3000 3001 8080 8081 15636 15637 ];
   networking.firewall.interfaces.wlan0.allowedUDPPorts = [ 8081 19000 3000 3001 ];
   networking.firewall.interfaces.wlan0.allowedTCPPorts = [ 8081 19000 3000 3001 ];
 
@@ -141,7 +139,7 @@ in
 
   environment.loginShellInit = ''
     if [ "$(tty)" = "/dev/tty1" ]; then
-      exec sway --unsupported-gpu >> ~/.sway.log 2>&1 
+      exec sway >> ~/.sway.log 2>&1 
       # exec ${pkgs.kanshi}/bin/kanshi 2>&1 ~/.kanshi.log
     fi
   '';
@@ -246,7 +244,7 @@ in
     step-cli
     unstable.pscale
     # unstable.mysql80
-    unstable.nomad_1_6
+    unstable.nomad_1_7
     unstable.consul
     unstable.consul-template
     unstable.envconsul
@@ -277,6 +275,7 @@ in
     altair # graphql client
     insomnia # rest client
     unstable.minecraft
+    unstable.remmina
     # unstable.prismlauncher
     # firefox
     # firefox-devedition-bin
@@ -334,7 +333,7 @@ in
     unstable.nodePackages.yaml-language-server
     unstable.nodePackages.typescript-language-server
     unstable.nodePackages.vscode-langservers-extracted
-    unstable.rnix-lsp
+    nil
   ];
 
   programs.neovim = {
