@@ -63,7 +63,7 @@ in
   networking.wireless.iwd.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
   services.resolved.enable = true;
-  services.resolved.dnssec = "allow-downgrade";
+  services.resolved.dnssec = "false";
   services.resolved.fallbackDns = [
     # cloudflare
     "1.1.1.1"
@@ -244,11 +244,14 @@ in
     step-cli
     unstable.pscale
     # unstable.mysql80
-    unstable.nomad_1_7
+    unstable.nomad
     unstable.consul
     unstable.consul-template
     unstable.envconsul
     unstable.vault
+    unstable.restic
+    unstable.kopia
+    unstable.turso-cli
     unstable.pulumi-bin
     dogdns
     unstable.packer
@@ -274,9 +277,10 @@ in
     # gui 
     altair # graphql client
     insomnia # rest client
-    unstable.minecraft
+    # unstable.minecraft
     unstable.remmina
-    # unstable.prismlauncher
+    unstable.prismlauncher
+    unstable.atlas
     # firefox
     # firefox-devedition-bin
     google-chrome
@@ -296,6 +300,7 @@ in
     unstable.go
     unstable.air # golang auto rebuilder
     unstable.delve # golang debugger
+    unstable.elixir
     poetry
     # pkgs.python39Packages.poetry
     unstable.nodePackages.pnpm
@@ -309,6 +314,8 @@ in
     # unstable.wrangler
     unstable.rustup
     unstable.ansible
+    
+    unstable.prismlauncher
 
     # lsps
     unstable.ansible-lint
@@ -329,7 +336,7 @@ in
     unstable.nodePackages.json-server
     unstable.nodePackages.diagnostic-languageserver
     unstable.nodePackages.dockerfile-language-server-nodejs
-    unstable.nodePackages.bash-language-server
+    # unstable.nodePackages.bash-language-server
     unstable.nodePackages.yaml-language-server
     unstable.nodePackages.typescript-language-server
     unstable.nodePackages.vscode-langservers-extracted
