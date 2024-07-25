@@ -55,9 +55,9 @@ in
   # ssh - 22 
   # remote buildkit - 8372
   networking.firewall.interfaces.tailscale0.allowedUDPPorts = [ 3000 ];
-  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 8372 3000 3001 8080 8081 15636 15637 ];
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 80 443 8372 3000 3001 8080 8081 9998 9999 15636 15637 ];
   networking.firewall.interfaces.wlan0.allowedUDPPorts = [ 8081 19000 3000 3001 ];
-  networking.firewall.interfaces.wlan0.allowedTCPPorts = [ 8081 19000 3000 3001 ];
+  networking.firewall.interfaces.wlan0.allowedTCPPorts = [ 8081 9998 9999 19000 3000 3001 ];
 
   networking.networkmanager.enable = true;
   networking.wireless.iwd.enable = true;
@@ -242,7 +242,7 @@ in
     unstable.bat
     unstable.croc
     step-cli
-    unstable.pscale
+    # unstable.pscale
     # unstable.mysql80
     unstable.nomad
     unstable.consul
@@ -253,7 +253,7 @@ in
     unstable.kopia
     unstable.turso-cli
     unstable.pulumi-bin
-    dogdns
+    unstable.dogdns
     unstable.packer
     unstable.google-cloud-sdk
     unstable.helix
@@ -262,8 +262,8 @@ in
     unstable.openssl.dev
 
     # passwords
-    bitwarden
-    bitwarden-cli
+    unstable.bitwarden
+    unstable.bitwarden-cli
 
     # system-utils
     libnotify
@@ -280,7 +280,7 @@ in
     # unstable.minecraft
     unstable.remmina
     unstable.prismlauncher
-    unstable.atlas
+    # unstable.atlas
     # firefox
     # firefox-devedition-bin
     google-chrome
@@ -302,6 +302,7 @@ in
     unstable.delve # golang debugger
     unstable.elixir
     poetry
+    unstable.uv
     # pkgs.python39Packages.poetry
     unstable.nodePackages.pnpm
     unstable.nodejs
@@ -314,6 +315,7 @@ in
     # unstable.wrangler
     unstable.rustup
     unstable.ansible
+    unstable.sqlc
     
     unstable.prismlauncher
 
@@ -323,7 +325,14 @@ in
     unstable.rust-analyzer
     # unstable.lsp-ansible
     unstable.gopls
-    # unstable.marksman
+    unstable.gofumpt
+    unstable.go-tools
+    unstable.errcheck
+    unstable.cmake
+
+    unstable.cmake-language-server
+    unstable.ccls
+    unstable.marksman
     unstable.gotools
     unstable.terraform-lsp
     unstable.pyright
@@ -336,11 +345,11 @@ in
     unstable.nodePackages.json-server
     unstable.nodePackages.diagnostic-languageserver
     unstable.nodePackages.dockerfile-language-server-nodejs
-    # unstable.nodePackages.bash-language-server
+    unstable.nodePackages.bash-language-server
     unstable.nodePackages.yaml-language-server
     unstable.nodePackages.typescript-language-server
     unstable.nodePackages.vscode-langservers-extracted
-    nil
+    unstable.nil
   ];
 
   programs.neovim = {
@@ -351,6 +360,7 @@ in
     vimAlias = true;
   };
   virtualisation.docker.enable = true;
+  virtualisation.docker.extraOptions = "--insecure-registry \"https://localhost:5002\" --insecure-registry \"https://100.85.82.116:5000\"";
   virtualisation.docker.package = pkgs.unstable.docker;
   virtualisation.docker.autoPrune.enable = true;
 
@@ -380,7 +390,7 @@ in
   };
   programs.sway = {
     enable = true;
-    package = pkgs.unstable.sway;
+    package = pkgs.sway;
     extraPackages = with pkgs; [
       unstable.xdg-utils
       unstable.swaylock
@@ -396,6 +406,9 @@ in
       unstable.kanshi
     ];
   };
+
+  services.blueman.enable = true;
+  services.mullvad-vpn.enable = true;
 
   # set my location to seattle for redshift seattle
   location.latitude = 47.6;
