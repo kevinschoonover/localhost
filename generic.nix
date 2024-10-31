@@ -285,7 +285,7 @@ in
     # firefox-devedition-bin
     google-chrome
     unstable.discord
-    unstable.wf-recorder
+    unstable.kooha
     imv
 
     spotify
@@ -305,6 +305,7 @@ in
     unstable.uv
     # pkgs.python39Packages.poetry
     unstable.nodePackages.pnpm
+    unstable.vacuum-go
     unstable.nodejs
     unstable.yarn
     gcc
@@ -316,6 +317,7 @@ in
     unstable.rustup
     unstable.ansible
     unstable.sqlc
+    unstable.sqlite
     
     unstable.prismlauncher
 
