@@ -14,7 +14,7 @@ in
   boot.initrd.luks.yubikeySupport = true;
 
   nix = {
-    package = pkgs.nixFlakes;
+    package = pkgs.nixVersions.stable;
     settings.experimental-features = [ "nix-command" "flakes" ];
     # optimize the nixstore by symlinking identically derivations
     settings.auto-optimise-store = true;
@@ -82,11 +82,7 @@ in
   # Set your time zone.
   time.timeZone = "America/Vancouver";
 
-  fonts = {
-    packages = with pkgs; [
-      nerdfonts
-    ];
-  };
+  fonts.packages = [ ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -98,6 +94,7 @@ in
   # Sound settings
   security.rtkit.enable = true;
   services.pipewire = {
+    wireplumber.enable = true;
     enable = true;
     alsa.enable = true;
     pulse.enable = true;
@@ -262,8 +259,8 @@ in
     unstable.openssl.dev
 
     # passwords
-    unstable.bitwarden
-    unstable.bitwarden-cli
+    # bitwarden
+    bitwarden-cli
 
     # system-utils
     libnotify
@@ -285,7 +282,8 @@ in
     # firefox-devedition-bin
     google-chrome
     unstable.discord
-    unstable.kooha
+    unstable.kooha # screen recorder
+    unstable.graphviz
     imv
 
     spotify
@@ -315,14 +313,14 @@ in
     binutils
     # unstable.wrangler
     unstable.rustup
-    unstable.ansible
+    ansible
     unstable.sqlc
     unstable.sqlite
     
     unstable.prismlauncher
 
     # lsps
-    unstable.ansible-lint
+    ansible-lint
     unstable.taplo-cli
     unstable.rust-analyzer
     # unstable.lsp-ansible
@@ -366,6 +364,11 @@ in
   virtualisation.docker.package = pkgs.unstable.docker;
   virtualisation.docker.autoPrune.enable = true;
 
+  programs.virt-manager.enable = true;
+  users.groups.libvirtd.members = ["kschoon"];
+  virtualisation.libvirtd.enable = true;
+  virtualisation.spiceUSBRedirection.enable = true;
+
   security.pam.yubico = {
     enable = true;
     debug = false;
@@ -379,12 +382,10 @@ in
 
   programs.mtr.enable = true;
   programs.steam.enable = true;
-  hardware.opengl.driSupport = true;
-  hardware.opengl.driSupport32Bit = true;
-  hardware.opengl.extraPackages32 = with pkgs.pkgsi686Linux; [ libva ];
-  hardware.pulseaudio.support32Bit = true;
   hardware.steam-hardware.enable = true;
-
+  services.hardware.bolt.enable = true;
+  hardware.graphics.enable = true;
+  hardware.graphics.extraPackages32 = with pkgs.pkgsi686Linux; [ libva ];
 
   programs.gnupg.agent = {
     enable = true;
@@ -418,12 +419,6 @@ in
   services.redshift = {
     enable = true;
     package = pkgs.gammastep;
-  };
-
-  programs.waybar.enable = true;
-
-  hardware.opengl = {
-    enable = true;
   };
 
   services.tailscale.enable = true;

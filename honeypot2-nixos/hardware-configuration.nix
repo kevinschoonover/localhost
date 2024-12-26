@@ -23,6 +23,11 @@
   # pinging them, unlike my servers.
   boot.kernel.sysctl."net.ipv4.icmp_echo_ignore_broadcasts" = 1;
 
+  # https://urukrama.wordpress.com/2009/01/27/usb-drive-not-recognised-error-71/
+  boot.extraModprobeConfig = ''
+    options usbcore use_both_schemes=y
+  '';
+
   nix.settings.max-jobs = lib.mkDefault 16;
 
   fileSystems."/" =
