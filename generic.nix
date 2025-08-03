@@ -1,12 +1,19 @@
-{ config, pkgs, lib, ... }:
+{
+  config,
+  pkgs,
+  lib,
+  ...
+}:
 
 let
   # TODO: does not work during install because tailscale is not initialized
   # + you need certificate to even be able to access it
-  internalCA = builtins.readFile (builtins.fetchurl {
-    url = "https://vault.prod.stratos.host:8200/v1/internal/ca/pem";
-    sha256 = "d69f2f83b9999d1462a5d25dba4cfafbfaf8569894d4d08f81d2f9878e1237a2";
-  });
+  internalCA = builtins.readFile (
+    builtins.fetchurl {
+      url = "https://vault.prod.stratos.host:8200/v1/internal/ca/pem";
+      sha256 = "d69f2f83b9999d1462a5d25dba4cfafbfaf8569894d4d08f81d2f9878e1237a2";
+    }
+  );
   # internalCA = builtins.readFile /home/kschoon/Downloads/pem;
 in
 {
@@ -15,7 +22,10 @@ in
 
   nix = {
     package = pkgs.nixVersions.stable;
-    settings.experimental-features = [ "nix-command" "flakes" ];
+    settings.experimental-features = [
+      "nix-command"
+      "flakes"
+    ];
     # optimize the nixstore by symlinking identically derivations
     settings.auto-optimise-store = true;
     extraOptions = ''
@@ -52,12 +62,37 @@ in
   # users.users.kschoon.openssh.authorizedKeys.keys = [ "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC32BCKLtDkwrVviZZClZSJ5AO2XeWaFUp7CLOJgPSWp0JTck4aGx9U8zjtjo1xzTRqtm5R+ftu6MBbgpEEo2z5NQoBPSOa89AyeszRMDFgHboNNrJ8sn6+ToLpzWJKXnOM0BhNIdbYXjVdROcKnf+/tiO9mj+tIn42iGppbmMKeO+BXvuMhkQV6FL9gJbxRDD6VI1hgOlHg0Ku2a8c8KKW3eiv9XtOc8kuDY68Yg/mPTY3wUgBqwqaq+HYo+gMEkWZefiG+JvlOw18cwx3fsr0CBVHgZsZIcSdQMNx5MkQx/+M8ZKnJzCHcGPRPCYdpwQOFxBLXDG2RI7sAcVw9be8K6RlLuEBmxrY8O/QtTHmkVlOjn+s5fyfK3GY5hnUV9+R1ao+EDoF9z2IGZSbypnK+gne+bGkq2J0CH4P6Hws8xgFIWefi06i7k03LcMnkDRTmifTrCvUCRSYxIrr+PthK4wDHUyqTCsWp7jfZ5TwynRR7vss593CIjJTrx+xrBiMYEWRXp13+PPl0qF2RpxfKesOu5nZsD7UmWv8FTy6GJocC0k+CHrnk4FAAuLETQPBHQkfJMqyRhvRAmoO4CpviTQ2pQEkIrC3AXJkLxxltpRidK/I4DTmW0mHcJiXzXvLmR/YWTDprWYEtXaSBHtFU5pt88wt/pO2RpIlOkWu0w== kschoon@honeypot" ];
 
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
-  # ssh - 22 
+  # ssh - 22
   # remote buildkit - 8372
   networking.firewall.interfaces.tailscale0.allowedUDPPorts = [ 3000 ];
-  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [ 22 80 443 8372 3000 3001 8080 8081 9998 9999 15636 15637 ];
-  networking.firewall.interfaces.wlan0.allowedUDPPorts = [ 8081 19000 3000 3001 ];
-  networking.firewall.interfaces.wlan0.allowedTCPPorts = [ 8081 9998 9999 19000 3000 3001 ];
+  networking.firewall.interfaces.tailscale0.allowedTCPPorts = [
+    22
+    80
+    443
+    8372
+    3000
+    3001
+    8080
+    8081
+    9998
+    9999
+    15636
+    15637
+  ];
+  networking.firewall.interfaces.wlan0.allowedUDPPorts = [
+    8081
+    19000
+    3000
+    3001
+  ];
+  networking.firewall.interfaces.wlan0.allowedTCPPorts = [
+    8081
+    9998
+    9999
+    19000
+    3000
+    3001
+  ];
 
   networking.networkmanager.enable = true;
   networking.wireless.iwd.enable = true;
@@ -77,12 +112,16 @@ in
     "2001:4860:4860::8888"
     "2001:4860:4860::8844"
   ];
-  networking.nameservers = [ "1.1.1.1" "1.0.0.1" ];
+  networking.nameservers = [
+    "1.1.1.1"
+    "1.0.0.1"
+  ];
 
   # Set your time zone.
   time.timeZone = "America/Vancouver";
 
-  fonts.packages = [ ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
+  fonts.packages =
+    [ ] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -130,7 +169,12 @@ in
 
   users.users.kschoon = {
     isNormalUser = true;
-    extraGroups = [ "wheel" "video" "networkmanager" "docker" ];
+    extraGroups = [
+      "wheel"
+      "video"
+      "networkmanager"
+      "docker"
+    ];
   };
   services.getty.autologinUser = "kschoon";
 
@@ -166,7 +210,7 @@ in
     function we_are_in_git_work_tree {
      git rev-parse --is-inside-work-tree &> /dev/null
     }
-   
+
     function parse_git_branch {
         if we_are_in_git_work_tree
         then
@@ -183,7 +227,7 @@ in
            fi
         fi
     }
-   
+
     function parse_git_status {
         if we_are_in_git_work_tree
         then
@@ -194,7 +238,7 @@ in
         fi
         fi
     }
-   
+
     function pwd_depth_limit_2 {
         if [ "$PWD" = "$HOME" ]
         then echo -n "~"
@@ -209,13 +253,13 @@ in
         echo "use flake" > .envrc
         direnv allow
       fi
-      ${EDITOR:-vim} flake.nix
+      ${"EDITOR:-vim"} flake.nix
     }
-   
+
     COLBROWN="\[\033[1;33m\]"
     COLRED="\[\033[1;31m\]"
     COLCLEAR="\[\033[0m\]"
-   
+
     # Export all these for subshells
     export -f parse_git_branch parse_git_status we_are_in_git_work_tree pwd_depth_limit_2 flakify
     export PS1="$COLRED\$(parse_git_status)$COLBROWN\$(parse_git_branch) $COLRED>$COLCLEAR "
@@ -224,7 +268,7 @@ in
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-    # cli 
+    # cli
     jq
     vim
     unstable.tmux
@@ -271,7 +315,7 @@ in
     vulkan-tools
     direnv
 
-    # gui 
+    # gui
     altair # graphql client
     insomnia # rest client
     # unstable.minecraft
@@ -293,7 +337,7 @@ in
     unstable.earthly
     docker-compose
 
-    # programming languages 
+    # programming languages
     gnumake
     unstable.go
     unstable.air # golang auto rebuilder
@@ -316,7 +360,7 @@ in
     ansible
     unstable.sqlc
     unstable.sqlite
-    
+
     unstable.prismlauncher
 
     # lsps
@@ -330,7 +374,7 @@ in
     unstable.errcheck
     unstable.cmake
 
-    unstable.cmake-language-server
+    # unstable.cmake-language-server
     unstable.ccls
     unstable.marksman
     unstable.gotools
@@ -365,7 +409,7 @@ in
   virtualisation.docker.autoPrune.enable = true;
 
   programs.virt-manager.enable = true;
-  users.groups.libvirtd.members = ["kschoon"];
+  users.groups.libvirtd.members = [ "kschoon" ];
   virtualisation.libvirtd.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
 
@@ -376,7 +420,11 @@ in
     # 1. primary yubikey
     # 2. backup yubikey
     # 3. keychain yubikey
-    id = [ "14403606" "11584605" "15202067" ];
+    id = [
+      "14403606"
+      "11584605"
+      "15202067"
+    ];
   };
   security.pam.yubico.control = "sufficient";
 
