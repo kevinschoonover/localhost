@@ -204,6 +204,7 @@ in
     alias blssh="vault ssh -host-key-mount-point=ssh-infra-host -mount-point=ssh-infra-client -role=root -mode=ca"
 
     alias discord="exec discord --use-gl=desktop"
+    alias slack="export NIXOS_OZONE_WL=1; slack"
     alias login="export VAULT_ADDR="https://vault.prod.stratos.host:8200"; vault login -method=oidc role=developer"
     alias token="export VAULT_ADDR="https://vault.prod.stratos.host:8200"; export NOMAD_ADDR="http://nomad-servers.prod.stratos.host:4646"; export NOMAD_TOKEN=\`vault read --format json nomad/creds/management | jq -r '.data.secret_id'\`"
 
@@ -294,10 +295,13 @@ in
     unstable.kopia
     unstable.turso-cli
     unstable.pulumi-bin
-    unstable.dogdns
+    unstable.doggo
     unstable.packer
     unstable.google-cloud-sdk
     unstable.helix
+
+    unstable.slack
+    unstable.vscode.fhs
 
     unstable.openssl
     unstable.openssl.dev
@@ -333,6 +337,7 @@ in
     spotify
 
     unstable.kitty
+    unstable.opencode
 
     unstable.earthly
     docker-compose
@@ -349,6 +354,7 @@ in
     unstable.nodePackages.pnpm
     unstable.vacuum-go
     unstable.nodejs
+    unstable.bun
     unstable.yarn
     gcc
     unstable.tree-sitter
@@ -364,8 +370,8 @@ in
     unstable.prismlauncher
 
     # lsps
-    ansible-lint
-    unstable.taplo-cli
+    unstable.ansible-lint
+    unstable.taplo
     unstable.rust-analyzer
     # unstable.lsp-ansible
     unstable.gopls
@@ -373,9 +379,14 @@ in
     unstable.go-tools
     unstable.errcheck
     unstable.cmake
+    unstable.golangci-lint-langserver
+    unstable.golangci-lint
+    unstable.dockerfile-language-server
+
+    unstable.turbo
 
     # unstable.cmake-language-server
-    unstable.ccls
+    ccls
     unstable.marksman
     unstable.gotools
     unstable.terraform-lsp
@@ -388,7 +399,6 @@ in
     unstable.nodePackages.eslint_d
     unstable.nodePackages.json-server
     unstable.nodePackages.diagnostic-languageserver
-    unstable.nodePackages.dockerfile-language-server-nodejs
     unstable.nodePackages.bash-language-server
     unstable.nodePackages.yaml-language-server
     unstable.nodePackages.typescript-language-server
@@ -441,7 +451,7 @@ in
   };
   programs.sway = {
     enable = true;
-    package = pkgs.sway;
+    package = pkgs.unstable.sway;
     extraPackages = with pkgs; [
       unstable.xdg-utils
       unstable.swaylock
