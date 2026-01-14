@@ -64,7 +64,11 @@ in
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
   # ssh - 22
   # remote buildkit - 8372
-  networking.firewall.interfaces.tailscale0.allowedUDPPorts = [ 3000 ];
+  networking.firewall.interfaces.tailscale0.allowedUDPPorts = [
+    3000
+    9876
+    9877
+  ];
   networking.firewall.interfaces.tailscale0.allowedTCPPorts = [
     22
     80
@@ -93,10 +97,14 @@ in
     3000
     3001
   ];
+  networking.firewall.interfaces.docker0.allowedTCPPorts = [
+    8080
+  ];
 
   networking.networkmanager.enable = true;
   networking.wireless.iwd.enable = true;
   networking.networkmanager.wifi.backend = "iwd";
+  networking.nftables.enable = true;
   services.resolved.enable = true;
   services.resolved.dnssec = "false";
   services.resolved.fallbackDns = [
@@ -156,14 +164,25 @@ in
   };
 
   xdg = {
+    autostart.enable = true;
     icons.enable = true;
     portal = {
+      xdgOpenUsePortal = false;
       enable = true;
       extraPortals = [
+        pkgs.xdg-desktop-portal
         pkgs.xdg-desktop-portal-gtk
         pkgs.xdg-desktop-portal-wlr
       ];
-      # gtkUsePortal = true;
+      config = {
+        sway = {
+          default = [ "gtk" ];
+          "org.freedesktop.impl.portal.OpenURI" = "gtk";
+          "org.freedesktop.impl.portal.Screencast" = "wlr";
+          "org.freedesktop.impl.portal.Screenshot" = "wlr";
+          "org.freedesktop.impl.portal.GlobalShortcuts" = "gtk";
+        };
+      };
     };
   };
 
@@ -174,12 +193,17 @@ in
       "video"
       "networkmanager"
       "docker"
+      "adbusers"
     ];
   };
   services.getty.autologinUser = "kschoon";
 
   environment.loginShellInit = ''
     if [ "$(tty)" = "/dev/tty1" ]; then
+      echo "============================" >> ~/.sway.log
+      echo "Starting sway session at $(date)" >> ~/.sway.log
+      echo "============================" >> ~/.sway.log
+
       exec sway >> ~/.sway.log 2>&1 
       # exec ${pkgs.kanshi}/bin/kanshi 2>&1 ~/.kanshi.log
     fi
@@ -188,6 +212,7 @@ in
   environment.interactiveShellInit = ''
     eval "$(direnv hook bash)"
     # pnpm
+    export XDG_HOME_DIR="$HOME"
     export PNPM_HOME="$HOME/.local/share/pnpm"
     export PATH="$PNPM_HOME:$PATH"
     # pnpm end
@@ -202,6 +227,13 @@ in
     alias tb="cd ~/git-local/bloominlabs/hostin-proj/test-bed"
     alias sse="source ~/.stratos/creds.sh && source ~/.stratos/setup_env.sh"
     alias blssh="vault ssh -host-key-mount-point=ssh-infra-host -mount-point=ssh-infra-client -role=root -mode=ca"
+    function record {
+      if [ -z "$1" ]; then
+        wf-recorder -f ~/Videos/$(date +%Y-%m-%d_%H-%M-%S).mkv -g "$(slurp)"
+      else
+        wf-recorder -f $1 -g "$(slurp)"
+      fi
+    }
 
     alias discord="exec discord --use-gl=desktop"
     alias slack="export NIXOS_OZONE_WL=1; slack"
@@ -269,6 +301,8 @@ in
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
+    android-tools
+
     # cli
     jq
     vim
@@ -330,7 +364,7 @@ in
     # firefox-devedition-bin
     google-chrome
     unstable.discord
-    unstable.kooha # screen recorder
+    unstable.wf-recorder
     unstable.graphviz
     imv
 
@@ -384,9 +418,15 @@ in
     unstable.dockerfile-language-server
 
     unstable.turbo
+    unstable.awscli2
 
     # unstable.cmake-language-server
     ccls
+
+    # python
+    unstable.ruff
+    unstable.basedpyright
+
     unstable.marksman
     unstable.gotools
     unstable.terraform-lsp
@@ -396,7 +436,6 @@ in
     unstable.rust-analyzer
     unstable.lua-language-server
     unstable.pkgs.nodePackages.prettier
-    unstable.nodePackages.eslint_d
     unstable.nodePackages.json-server
     unstable.nodePackages.diagnostic-languageserver
     unstable.nodePackages.bash-language-server
@@ -404,6 +443,7 @@ in
     unstable.nodePackages.typescript-language-server
     unstable.nodePackages.vscode-langservers-extracted
     unstable.nil
+    unstable.copilot-language-server
   ];
 
   programs.neovim = {
@@ -419,8 +459,8 @@ in
   virtualisation.docker.autoPrune.enable = true;
 
   programs.virt-manager.enable = true;
-  users.groups.libvirtd.members = [ "kschoon" ];
-  virtualisation.libvirtd.enable = true;
+  # users.groups.libvirtd.members = [ "kschoon" ];
+  # virtualisation.libvirtd.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
 
   security.pam.yubico = {
@@ -467,6 +507,8 @@ in
       unstable.kanshi
     ];
   };
+
+  programs.adb.enable = true;
 
   services.blueman.enable = true;
   services.mullvad-vpn.enable = true;
