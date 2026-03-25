@@ -9,7 +9,7 @@
       mkdir -p /home/kschoon/.config
 
       # Symlink .config/<app> directories (stow layout: <app>/.config/<app>)
-      for app in nvim sway waybar kitty mako; do
+      for app in nvim kitty; do
         ln -sfn "${dotfilesPath}/$app/.config/$app" "/home/kschoon/.config/$app"
       done
 
@@ -18,7 +18,7 @@
       ln -sf "${dotfilesPath}/git/.gitconfig" /home/kschoon/.gitconfig
 
       # Fix ownership
-      chown -h kschoon:users /home/kschoon/.config/{nvim,sway,waybar,kitty,mako}
+      chown -h kschoon:users /home/kschoon/.config/{nvim,kitty}
       chown -h kschoon:users /home/kschoon/.tmux.conf /home/kschoon/.gitconfig
     '';
   };

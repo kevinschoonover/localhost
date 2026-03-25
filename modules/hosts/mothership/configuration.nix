@@ -15,9 +15,10 @@
       self.nixosModules.certificates
 
       # Desktop
-      self.nixosModules.sway
+      self.nixosModules.niri
+
       self.nixosModules.dotfiles
-      self.nixosModules.redshift
+
 
       # Applications
       self.nixosModules.browser

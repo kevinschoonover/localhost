@@ -5,6 +5,6 @@
       isNormalUser = true;
       extraGroups = [ "wheel" "video" "docker" ];
     };
-    services.getty.autologinUser = "kschoon";
+    # Getty autologin disabled — niri.nix uses autologin systemd service instead
   };
 }

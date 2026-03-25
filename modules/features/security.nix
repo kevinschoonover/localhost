@@ -9,6 +9,9 @@
       control = "sufficient";
     };
     programs.gnupg.agent = { enable = true; enableSSHSupport = true; };
+
+    # GNOME Keyring disabled — using 1password + gnupg instead
+    # Avoids unlock prompt with greetd autologin (no password to unlock with)
     programs._1password.enable = true;
     programs._1password-gui = {
       enable = true;
