@@ -1,0 +1,33 @@
+{ ... }:
+{
+  flake.nixosModules.mothershipHardware = { config, lib, pkgs, modulesPath, ... }: {
+    imports = [
+      (modulesPath + "/installer/scan/not-detected.nix")
+    ];
+
+    boot.initrd.availableKernelModules = [ "nvme" "xhci_pci" "ahci" "usbhid" "usb_storage" "sd_mod" ];
+    boot.initrd.kernelModules = [ "dm-snapshot" ];
+    boot.kernelModules = [ "kvm-amd" ];
+    boot.extraModulePackages = [ ];
+    boot.kernelParams = [
+      "mitigations=off"
+    ];
+    boot.kernel.sysctl."net.ipv4.icmp_echo_ignore_broadcasts" = 1;
+
+    nix.settings.max-jobs = lib.mkDefault 6;
+    powerManagement.cpuFreqGovernor = "performance";
+    hardware.cpu.amd.updateMicrocode = true;
+
+    fileSystems."/" = {
+      device = "/dev/disk/by-uuid/3b94b72a-d8ce-4ac4-a997-7ddc0536f97a";
+      fsType = "ext4";
+    };
+
+    fileSystems."/boot" = {
+      device = "/dev/disk/by-uuid/FFCA-1213";
+      fsType = "vfat";
+    };
+
+    swapDevices = [{ device = "/dev/disk/by-uuid/dd5f2975-7f94-4149-848d-d8d4e66f63f6"; }];
+  };
+}
