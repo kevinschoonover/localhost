@@ -12,7 +12,7 @@ in
       packages.myNoctalia = inputs.wrapper-modules.wrappers.noctalia-shell.wrap {
         inherit pkgs;
         package = pkgs-unstable.noctalia-shell;
-        settings = (builtins.fromJSON (builtins.readFile ./noctalia.json)).settings;
+        settings = (builtins.fromJSON (builtins.readFile ./noctalia.json));
       };
     };
 }
