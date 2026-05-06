@@ -6,7 +6,6 @@
       environment.systemPackages = with pkgs; [
         spotify
         unstable.playerctl
-        inputs.spotatui.packages.${pkgs.stdenv.hostPlatform.system}.default
       ];
     };
 }

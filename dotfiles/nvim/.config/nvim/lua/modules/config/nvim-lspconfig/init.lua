@@ -8,6 +8,14 @@ vim.lsp.config('*', {
   capabilities = capabilities,
 })
 
+vim.lsp.config('copilot', {
+  settings = {
+    telemetry = {
+      telemetryLevel = 'off',
+    },
+  },
+})
+
 vim.filetype.add {
   pattern = {
     ['openapi.*%.ya?ml'] = 'yaml.openapi',
@@ -126,6 +134,35 @@ vim.api.nvim_create_autocmd('LspAttach', {
         vim.lsp.inlay_hint.enable(not vim.lsp.inlay_hint.is_enabled { bufnr = event.buf })
       end, '[T]oggle Inlay [H]ints')
     end
+
+    if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_completion) then
+      -- Completion is handled by blink.cmp via its 'lsp' source
+    end
+
+    -- Enable LLM-based inline completion
+    if client and client:supports_method(vim.lsp.protocol.Methods.textDocument_inlineCompletion) then
+      vim.lsp.inline_completion.enable(true)
+      vim.keymap.set("i", "<Tab>",
+        function()
+          if not vim.lsp.inline_completion.get() then
+            return "<Tab>"
+          end
+        end,
+        { buffer = event.buf, expr = true, replace_keycodes = true, desc = "LSP: Apply inline completion suggestion" }
+      )
+      vim.keymap.set("i", "<M-n>",
+        function()
+          vim.lsp.inline_completion.select({})
+        end,
+        { buffer = event.buf, desc = "LSP: Show next inline completion suggestion" }
+      )
+      vim.keymap.set("i", "<M-p>",
+        function()
+          vim.lsp.inline_completion.select({ count = -1 })
+        end,
+        { buffer = event.buf, desc = "LSP: Show previous inline completion suggestion" }
+      )
+    end
   end,
 })
 
@@ -208,6 +245,7 @@ local servers = {
   ruff = {},
   basedpyright = {},
   copilot = {},
+  tombi = {},
 }
 
 for name, config in pairs(servers) do

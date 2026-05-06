@@ -57,6 +57,12 @@
     networking.hostName = "honeypot2";
     system.stateVersion = "25.11";
 
+    # Disable USB autosuspend for the Framework 16 keyboard module to prevent
+    # random disconnects (vendor=32ac, product=0012)
+    services.udev.extraRules = ''
+      ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="32ac", ATTR{idProduct}=="0012", ATTR{power/autosuspend}="-1"
+    '';
+
     services.power-profiles-daemon.enable = false;
     services.tlp.enable = false;
     hardware.bluetooth.powerOnBoot = true;

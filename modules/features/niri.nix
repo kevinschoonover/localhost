@@ -8,6 +8,19 @@ in
 {
   flake.nixosModules.niri =
     { pkgs, lib, ... }:
+    let
+      yaziDesktop = pkgs.makeDesktopItem {
+        name = "yazi";
+        desktopName = "Yazi";
+        exec = "${lib.getExe pkgs.unstable.kitty} -e ${lib.getExe pkgs.unstable.yazi} %U";
+        mimeTypes = [ "inode/directory" ];
+        terminal = false;
+        categories = [
+          "System"
+          "FileManager"
+        ];
+      };
+    in
     {
       programs.niri = {
         enable = true;
@@ -19,10 +32,8 @@ in
         icons.enable = true;
         portal = {
           enable = true;
-          extraPortals = [
-            pkgs.xdg-desktop-portal-gnome
-            pkgs.xdg-desktop-portal-gtk
-          ];
+          # extraPortals (gnome + gtk) are supplied by programs.niri.enable via
+          # the upstream NixOS module (programs/wayland/niri.nix + wayland-session.nix).
           config.niri = {
             default = [
               "gnome"
@@ -31,6 +42,27 @@ in
             "org.freedesktop.impl.portal.FileChooser" = [ "gtk" ];
             "org.freedesktop.impl.portal.Screencast" = [ "gnome" ];
             "org.freedesktop.impl.portal.Screenshot" = [ "gnome" ];
+          };
+        };
+        mime = {
+          enable = true;
+          defaultApplications = {
+            "text/html" = "google-chrome.desktop";
+            "x-scheme-handler/http" = "google-chrome.desktop";
+            "x-scheme-handler/https" = "google-chrome.desktop";
+            "x-scheme-handler/about" = "google-chrome.desktop";
+            "x-scheme-handler/unknown" = "google-chrome.desktop";
+            "x-scheme-handler/mailto" = "google-chrome.desktop";
+            "application/pdf" = "google-chrome.desktop";
+            "image/png" = "imv.desktop";
+            "image/jpeg" = "imv.desktop";
+            "image/gif" = "imv.desktop";
+            "image/webp" = "imv.desktop";
+            "image/svg+xml" = "imv.desktop";
+            "inode/directory" = "yazi.desktop";
+            "x-scheme-handler/slack" = "slack.desktop";
+            "x-scheme-handler/discord" = "discord.desktop";
+            "x-scheme-handler/spotify" = "spotify.desktop";
           };
         };
       };
@@ -56,17 +88,23 @@ in
       environment.variables = {
         XDG_ICON_THEME = "Papirus";
         QT_ICON_THEME_NAME = "Papirus";
+        XCURSOR_THEME = "Bibata-Modern-Classic";
+        XCURSOR_SIZE = "24";
       };
-      # GTK apps read icon theme from this file
+      # GTK apps read icon + cursor theme from this file
       environment.etc."xdg/gtk-3.0/settings.ini".text = ''
         [Settings]
         gtk-icon-theme-name=Papirus
+        gtk-cursor-theme-name=Bibata-Modern-Classic
+        gtk-cursor-theme-size=24
       '';
 
       programs.dconf.enable = true;
 
       environment.systemPackages = with pkgs; [
+        yaziDesktop
         papirus-icon-theme
+        bibata-cursors
         brightnessctl
         unstable.wf-recorder
         gpu-screen-recorder
@@ -94,6 +132,7 @@ in
     {
       packages.myNiri = inputs.wrapper-modules.wrappers.niri.wrap {
         inherit pkgs;
+        v2-settings = true;
         settings = {
           spawn-at-startup = [
             (lib.getExe self'.packages.myNoctalia)
@@ -120,11 +159,16 @@ in
 
           xwayland-satellite.path = lib.getExe pkgs-unstable.xwayland-satellite;
 
+          cursor = {
+            xcursor-theme = "Bibata-Modern-Classic";
+            xcursor-size = 24;
+          };
+
           # Monitor layout: LG ultrawide to the left, laptop on the right
           # To find output names and modes: niri msg outputs
           outputs."DP-8" = {
-            position = {
-              _attrs = {
+            position = _: {
+              props = {
                 x = 0;
                 y = 0;
               };
@@ -132,8 +176,8 @@ in
           };
           outputs."eDP-1" = {
             scale = 1.5;
-            position = {
-              _attrs = {
+            position = _: {
+              props = {
                 x = 3840;
                 y = 0;
               };
@@ -144,8 +188,8 @@ in
           input.keyboard.xkb.layout = "us";
 
           input.touchpad = {
-            tap = null;
-            natural-scroll = null;
+            tap = _: { };
+            natural-scroll = _: { };
           };
 
           layout = {
@@ -213,7 +257,7 @@ in
             "Mod+Return".spawn-sh = lib.getExe pkgs-unstable.kitty;
 
             # Close window
-            "Mod+Shift+Q".close-window = null;
+            "Mod+Shift+Q".close-window = _: { };
 
             # Application launcher (noctalia)
             "Mod+D".spawn-sh = "${noctaliaExe} ipc call launcher toggle";
@@ -222,24 +266,24 @@ in
             "Mod+W".spawn-sh = "${lib.getExe pkgs-unstable.iwmenu} --launcher fuzzel";
 
             # Focus navigation (vim keys)
-            "Mod+H".focus-column-left = null;
-            "Mod+J".focus-window-down = null;
-            "Mod+K".focus-window-up = null;
-            "Mod+L".focus-column-right = null;
-            "Mod+Left".focus-column-left = null;
-            "Mod+Down".focus-window-down = null;
-            "Mod+Up".focus-window-up = null;
-            "Mod+Right".focus-column-right = null;
+            "Mod+H".focus-column-left = _: { };
+            "Mod+J".focus-window-down = _: { };
+            "Mod+K".focus-window-up = _: { };
+            "Mod+L".focus-column-right = _: { };
+            "Mod+Left".focus-column-left = _: { };
+            "Mod+Down".focus-window-down = _: { };
+            "Mod+Up".focus-window-up = _: { };
+            "Mod+Right".focus-column-right = _: { };
 
             # Move windows (vim keys)
-            "Mod+Shift+H".move-column-left = null;
-            "Mod+Shift+J".move-window-down = null;
-            "Mod+Shift+K".move-window-up = null;
-            "Mod+Shift+L".move-column-right = null;
-            "Mod+Shift+Left".move-column-left = null;
-            "Mod+Shift+Down".move-window-down = null;
-            "Mod+Shift+Up".move-window-up = null;
-            "Mod+Shift+Right".move-column-right = null;
+            "Mod+Shift+H".move-column-left = _: { };
+            "Mod+Shift+J".move-window-down = _: { };
+            "Mod+Shift+K".move-window-up = _: { };
+            "Mod+Shift+L".move-column-right = _: { };
+            "Mod+Shift+Left".move-column-left = _: { };
+            "Mod+Shift+Down".move-window-down = _: { };
+            "Mod+Shift+Up".move-window-up = _: { };
+            "Mod+Shift+Right".move-column-right = _: { };
 
             # Workspaces
             "Mod+1".focus-workspace = "1:code";
@@ -264,24 +308,24 @@ in
             "Mod+Shift+9".move-column-to-workspace = "9:chat";
 
             # Move workspace to monitor
-            "Mod+N".move-workspace-to-monitor-left = null;
-            "Mod+M".move-workspace-to-monitor-right = null;
+            "Mod+N".move-workspace-to-monitor-left = _: { };
+            "Mod+M".move-workspace-to-monitor-right = _: { };
 
             # Fullscreen
-            "Mod+F".maximize-column = null;
-            "Mod+Shift+F".fullscreen-window = null;
+            "Mod+F".maximize-column = _: { };
+            "Mod+Shift+F".fullscreen-window = _: { };
 
             # Floating
-            "Mod+Shift+Space".toggle-window-floating = null;
+            "Mod+Shift+Space".toggle-window-floating = _: { };
 
             # Column width / resize
-            "Mod+R".switch-preset-column-width = null;
+            "Mod+R".switch-preset-column-width = _: { };
             "Mod+Minus".set-column-width = "-10%";
             "Mod+Equal".set-column-width = "+10%";
 
             # Screenshots
-            "Print".screenshot = null;
-            "Shift+Print".screenshot-window = null;
+            "Print".screenshot = _: { };
+            "Shift+Print".screenshot-window = _: { };
 
             # Volume
             "XF86AudioRaiseVolume".spawn-sh = "pamixer -i 5";
@@ -304,7 +348,7 @@ in
             "Mod+Shift+Home".spawn-sh = "${noctaliaExe} ipc call lockScreen lock";
 
             # Quit niri
-            "Mod+Shift+E".quit = null;
+            "Mod+Shift+E".quit = _: { };
 
             # Reload config
             "Mod+Shift+C".spawn-sh = "niri msg action reload-config";

@@ -1,6 +1,8 @@
 { ... }:
 {
-  flake.nixosModules.bash-lang = { pkgs, ... }: {
-    environment.systemPackages = [ pkgs.unstable.nodePackages.bash-language-server ];
-  };
+  flake.nixosModules.bash-lang =
+    { pkgs, ... }:
+    {
+      environment.systemPackages = [ pkgs.unstable.bash-language-server ];
+    };
 }
