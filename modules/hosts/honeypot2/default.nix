@@ -5,17 +5,12 @@ let
     inherit system;
     config.allowUnfree = true;
   };
-  pkgs-master = import inputs.nixpkgs-master {
-    inherit system;
-    config.allowUnfree = true;
-  };
   pkgs = import inputs.nixpkgs {
     inherit system;
     config.allowUnfree = true;
     overlays = [
       (final: prev: {
         unstable = pkgs-unstable;
-        master = pkgs-master;
         nil = inputs.nil.packages.${system}.nil;
       })
     ];

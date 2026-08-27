@@ -136,6 +136,62 @@ sudo nixos-rebuild switch --rollback                # revert to previous gen
 sudo nix-collect-garbage -d                         # GC old generations
 ```
 
+### YubiKey LUKS (mothership)
+
+`mothership` unlocks `/dev/nvme1n1p2` with the
+[sgillespie yubikey-luks](https://github.com/sgillespie/nixos-yubikey-luks) scheme:
+an HMAC-SHA1 challenge-response against YubiKey slot 2, with the salt and challenge
+stored on the unencrypted `/dev/nvme1n1p1`. `setup.sh`, `addKey.sh` and
+`generate-key.sh` in the repo root drive that setup.
+
+This only works under **scripted stage 1**. nixpkgs 26.05 flipped
+`boot.initrd.systemd.enable` to default `true`, so `modules/hosts/mothership/configuration.nix`
+pins it back to `false`. Scripted stage 1 is **removed in 26.11**, and
+`systemd-cryptenroll` speaks FIDO2/PKCS#11/TPM2 rather than challenge-response, so
+there is no config-only translation — the LUKS header has to be re-enrolled.
+
+#### Migrating to FIDO2 before 26.11
+
+Needs physical access to mothership and a YubiKey 5 (4/NEO have no FIDO2
+hmac-secret; those migrate via PIV/PKCS#11 instead).
+
+1. **Confirm a passphrase keyslot exists first.** It is the only fallback if
+   enrollment fails, and the machine will not boot without one.
+
+    ```bash
+    sudo cryptsetup luksDump /dev/nvme1n1p2
+    ```
+
+2. **Enroll the FIDO2 credential:**
+
+    ```bash
+    sudo systemd-cryptenroll --fido2-device=auto /dev/nvme1n1p2
+    ```
+
+3. **Swap the host config** in `modules/hosts/mothership/configuration.nix`:
+
+    ```nix
+    boot.initrd.systemd.enable = true;
+    boot.initrd.luks.devices."encrypted" = {
+      device = "/dev/nvme1n1p2";
+      crypttabExtraOpts = [ "fido2-device=auto" ];
+    };
+    ```
+
+    Drop `boot.initrd.luks.yubikeySupport`, the `yubikey = { ... }` block, and the
+    `vfat`/`nls_*` initrd modules that only existed to read the salt partition.
+
+4. **Rebuild and reboot.** Verify the FIDO2 unlock works before going further.
+
+5. **Only then retire the old slot.** A stale challenge-response slot interferes
+   with passphrase fallback:
+
+    ```bash
+    sudo systemd-cryptenroll --wipe-slot=<old-slot> /dev/nvme1n1p2
+    ```
+
+    `/dev/nvme1n1p1` (salt/challenge storage) is dead once that slot is gone.
+
 ### Passwordless sudo
 [docs](https://nixos.wiki/wiki/Yubikey#yubico-pam)
 

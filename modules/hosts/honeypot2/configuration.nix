@@ -1,70 +1,76 @@
 { inputs, self, ... }:
 {
-  flake.nixosModules.honeypot2Configuration = { config, pkgs, lib, ... }: {
-    imports = [
-      inputs.nixos-hardware.nixosModules.framework-16-7040-amd
-      self.nixosModules.honeypot2Hardware
+  flake.nixosModules.honeypot2Configuration =
+    {
+      config,
+      pkgs,
+      lib,
+      ...
+    }:
+    {
+      imports = [
+        inputs.nixos-hardware.nixosModules.framework-16-7040-amd
+        self.nixosModules.honeypot2Hardware
 
-      # System fundamentals
-      self.nixosModules.boot
-      self.nixosModules.nix-settings
-      self.nixosModules.networking
-      self.nixosModules.locale
-      self.nixosModules.audio
-      self.nixosModules.user
-      self.nixosModules.shell
-      self.nixosModules.certificates
+        # System fundamentals
+        self.nixosModules.boot
+        self.nixosModules.nix-settings
+        self.nixosModules.networking
+        self.nixosModules.locale
+        self.nixosModules.audio
+        self.nixosModules.user
+        self.nixosModules.shell
+        self.nixosModules.certificates
 
-      # Desktop
-      self.nixosModules.niri
+        # Desktop
+        self.nixosModules.niri
 
-      self.nixosModules.dotfiles
+        self.nixosModules.dotfiles
 
+        # Applications
+        self.nixosModules.browser
+        self.nixosModules.communication
+        self.nixosModules.spotify
+        self.nixosModules.kitty
+        self.nixosModules.neovim
+        self.nixosModules.git
+        self.nixosModules.tmux
 
-      # Applications
-      self.nixosModules.browser
-      self.nixosModules.communication
-      self.nixosModules.spotify
-      self.nixosModules.kitty
-      self.nixosModules.neovim
-      self.nixosModules.git
-      self.nixosModules.tmux
+        # Languages
+        self.nixosModules.go
+        self.nixosModules.rust
+        self.nixosModules.python
+        self.nixosModules.node
+        self.nixosModules.lua
+        self.nixosModules.nix-lang
+        self.nixosModules.bash-lang
+        self.nixosModules.elixir
+        self.nixosModules.c-cpp
+        self.nixosModules.misc-lang
 
-      # Languages
-      self.nixosModules.go
-      self.nixosModules.rust
-      self.nixosModules.python
-      self.nixosModules.node
-      self.nixosModules.lua
-      self.nixosModules.nix-lang
-      self.nixosModules.bash-lang
-      self.nixosModules.elixir
-      self.nixosModules.c-cpp
-      self.nixosModules.misc-lang
+        # Infrastructure & services
+        self.nixosModules.infrastructure
+        self.nixosModules.docker
+        self.nixosModules.security
+        self.nixosModules.services
+        self.nixosModules.bluetooth
+        self.nixosModules.vpn
+        self.nixosModules.gaming
+        self.nixosModules.mobile
+        self.nixosModules.cli-utils
+      ];
 
-      # Infrastructure & services
-      self.nixosModules.infrastructure
-      self.nixosModules.docker
-      self.nixosModules.security
-      self.nixosModules.services
-      self.nixosModules.bluetooth
-      self.nixosModules.vpn
-      self.nixosModules.gaming
-      self.nixosModules.mobile
-      self.nixosModules.cli-utils
-    ];
+      networking.hostName = "honeypot2";
+      system.stateVersion = "26.05";
 
-    networking.hostName = "honeypot2";
-    system.stateVersion = "25.11";
+      # Disable USB autosuspend for the Framework 16 keyboard module to prevent
+      # random disconnects (vendor=32ac, product=0012)
+      services.udev.extraRules = ''
+        ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="32ac", ATTR{idProduct}=="0012", ATTR{power/autosuspend}="-1"
+      '';
 
-    # Disable USB autosuspend for the Framework 16 keyboard module to prevent
-    # random disconnects (vendor=32ac, product=0012)
-    services.udev.extraRules = ''
-      ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="32ac", ATTR{idProduct}=="0012", ATTR{power/autosuspend}="-1"
-    '';
-
-    services.power-profiles-daemon.enable = false;
-    services.tlp.enable = false;
-    hardware.bluetooth.powerOnBoot = true;
-  };
+      services.power-profiles-daemon.enable = false;
+      services.tlp.enable = false;
+      hardware.bluetooth.powerOnBoot = true;
+    };
 }

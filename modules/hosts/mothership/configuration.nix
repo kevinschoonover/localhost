@@ -56,7 +56,18 @@
     networking.hostName = "mothership";
     system.stateVersion = "21.11";
 
-    # LUKS + YubiKey
+    # LUKS + YubiKey.
+    #
+    # Pinned to scripted stage 1: this is the sgillespie yubikey-luks scheme,
+    # which derives the passphrase from an HMAC-SHA1 challenge-response against
+    # YubiKey slot 2, with the salt/challenge on the unencrypted p1. systemd
+    # stage 1 has no equivalent -- systemd-cryptenroll speaks FIDO2/PKCS11/TPM2,
+    # not challenge-response -- so enabling it would leave this host unbootable.
+    # nixpkgs 26.05 flipped boot.initrd.systemd.enable to default true, which is
+    # why this became explicit. Scripted stage 1 is removed in 26.11; migrating
+    # means enrolling FIDO2 on the LUKS header first, then dropping this block.
+    boot.initrd.systemd.enable = false;
+    boot.initrd.luks.yubikeySupport = true;
     boot.initrd.kernelModules = [ "vfat" "nls_cp437" "nls_iso8859-1" "usbhid" ];
     boot.initrd.luks.devices."encrypted" = {
       device = "/dev/nvme1n1p2";

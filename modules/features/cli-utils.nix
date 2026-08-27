@@ -1,8 +1,10 @@
-{ ... }:
+{ inputs, ... }:
 {
   flake.nixosModules.cli-utils =
     { pkgs, ... }:
     {
+      imports = [ inputs.omp.nixosModules.omp ];
+
       environment.systemPackages = with pkgs; [
         jq
         vim
@@ -29,12 +31,15 @@
         unstable.sqlite
         unstable.sqlc
         unstable.opencode
-        master.claude-code
+
+        unstable.claude-code
         unstable.kopia
         unstable.restic
         unstable.remmina
         altair
         insomnia
       ];
+
+      programs.omp.enable = true;
     };
 }

@@ -7,7 +7,10 @@
       autoPrune.enable = true;
       extraOptions = ''--insecure-registry "https://localhost:5002" --insecure-registry "https://100.85.82.116:5000"'';
     };
-    environment.systemPackages = with pkgs; [ docker-compose unstable.earthly ];
+    environment.systemPackages = with pkgs; [
+      docker-compose
+      unstable.earthbuild
+    ];
     programs.virt-manager.enable = true;
     virtualisation.spiceUSBRedirection.enable = true;
   };

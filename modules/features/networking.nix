@@ -21,6 +21,9 @@
       systemd.network.networks."20-wlan" = {
         matchConfig.Type = "wlan";
         networkConfig.DHCP = "yes";
+        dhcpV4Config.UseDNS = false;
+        dhcpV6Config.UseDNS = false;
+        ipv6AcceptRAConfig.UseDNS = false;
       };
       systemd.network.networks."20-ethernet" = {
         matchConfig = {
@@ -30,15 +33,18 @@
         };
         networkConfig.DHCP = "yes";
         linkConfig.RequiredForOnline = "no";
+        dhcpV4Config.UseDNS = false;
+        dhcpV6Config.UseDNS = false;
+        ipv6AcceptRAConfig.UseDNS = false;
       };
 
       networking.nftables.enable = true;
 
       # DNS via systemd-resolved
       services.resolved.enable = true;
-      services.resolved.dnssec = "false";
-      services.resolved.dnsovertls = "opportunistic";
-      services.resolved.fallbackDns = [
+      services.resolved.settings.Resolve.DNSOverTLS = "opportunistic";
+      services.resolved.settings.Resolve.DNSSEC = "no";
+      services.resolved.settings.Resolve.FallbackDNS = [
         "1.1.1.1"
         "1.0.0.1"
         "2606:4700:4700::1111"
@@ -48,10 +54,10 @@
         "2001:4860:4860::8888"
         "2001:4860:4860::8844"
       ];
-      networking.nameservers = [
-        "1.1.1.1"
-        "1.0.0.1"
-      ];
+      # networking.nameservers = [
+      #   "1.1.1.1"
+      #   "1.0.0.1"
+      # ];
 
       # Firewall
       networking.firewall.interfaces.tailscale0.allowedUDPPorts = [
