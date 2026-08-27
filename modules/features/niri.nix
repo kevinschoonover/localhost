@@ -143,7 +143,11 @@ in
               "--enable-features=UseOzonePlatform"
               "--ozone-platform=wayland"
             ]
-            (lib.getExe pkgs-unstable.google-chrome)
+            # Spawned by name from PATH, like spotify/discord/slack below, so
+            # this uses the single wrapped package from browser.nix rather than
+            # pulling a second google-chrome into the closure. The
+            # --ozone-platform=x11 flag lives in that wrapper.
+            "google-chrome-stable"
             [
               "discord"
               "--use-gl=desktop"

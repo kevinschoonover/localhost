@@ -9,7 +9,10 @@
         export PNPM_HOME="$HOME/.local/share/pnpm"
         export PATH="$PNPM_HOME:$PATH"
         export PATH=$PATH:~/go/bin:~/.yarn/bin/:~/.local/share/pnpm
-        export BROWSER=${pkgs.google-chrome}/bin/google-chrome-stable
+        # Resolved from PATH, not a store path: pinning the store path here
+        # pulled a second, unwrapped Chrome into the closure and meant anything
+        # launched via $BROWSER bypassed the flags set in browser.nix.
+        export BROWSER=google-chrome-stable
         alias vim="nvim"
         alias update="pushd ~/git-local/kevinschoonover/localhost && nix flake update; popd && sudo nixos-rebuild switch"
         alias grep="rg"
