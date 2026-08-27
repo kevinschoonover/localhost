@@ -1,0 +1,20 @@
+# Never track Claude Code runtime state. These live in ~/.claude and ~/.claude-home
+# and contain OAuth tokens, session transcripts, and PHI.
+.credentials.json
+.claude.json
+projects/
+history.jsonl
+file-history/
+jobs/
+sessions/
+tasks/
+paste-cache/
+shell-snapshots/
+session-env/
+telemetry/
+debug/
+daemon*
+cache/
+backups/
+plugins/
+*.bak.*

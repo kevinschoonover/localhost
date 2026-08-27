@@ -26,6 +26,7 @@
         self.nixosModules.niri
 
         self.nixosModules.dotfiles
+        self.nixosModules.agent-skills
 
         # Applications
         self.nixosModules.browser
