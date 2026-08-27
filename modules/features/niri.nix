@@ -106,7 +106,7 @@ in
         papirus-icon-theme
         bibata-cursors
         brightnessctl
-        unstable.wf-recorder
+        wf-recorder
         gpu-screen-recorder
         gpu-screen-recorder-gtk
         unstable.iwmenu
@@ -128,6 +128,12 @@ in
     }:
     let
       noctaliaExe = lib.getExe self'.packages.myNoctalia;
+
+      # The LG ultrawide's connector. Bound once because DRM renumbers these
+      # between kernels and docks: this was DP-8, is now DP-7, and every
+      # reference silently stopped matching without any error from niri.
+      # Confirm with `niri msg outputs` if the layout looks wrong.
+      ultrawide = "DP-7";
     in
     {
       packages.myNiri = inputs.wrapper-modules.wrappers.niri.wrap {
@@ -170,7 +176,7 @@ in
 
           # Monitor layout: LG ultrawide to the left, laptop on the right
           # To find output names and modes: niri msg outputs
-          outputs."DP-8" = {
+          outputs.${ultrawide} = {
             position = _: {
               props = {
                 x = 0;
@@ -203,34 +209,34 @@ in
 
           screenshot-path = "~/Pictures/Screenshots/%Y-%m-%d_%H-%M-%S.png";
 
-          # Named workspaces — primary workspaces open on ultrawide (DP-8)
+          # Named workspaces — primary workspaces open on the ultrawide
           workspaces = {
             "1:code" = {
-              open-on-output = "DP-8";
+              open-on-output = ultrawide;
             };
             "2:term" = {
-              open-on-output = "DP-8";
+              open-on-output = ultrawide;
             };
             "3" = {
-              open-on-output = "DP-8";
+              open-on-output = ultrawide;
             };
             "4" = {
-              open-on-output = "DP-8";
+              open-on-output = ultrawide;
             };
             "5" = {
-              open-on-output = "DP-8";
+              open-on-output = ultrawide;
             };
             "6" = {
-              open-on-output = "DP-8";
+              open-on-output = ultrawide;
             };
             "7:music" = {
-              open-on-output = "DP-8";
+              open-on-output = ultrawide;
             };
             "8:web" = {
-              open-on-output = "DP-8";
+              open-on-output = ultrawide;
             };
             "9:chat" = {
-              open-on-output = "DP-8";
+              open-on-output = ultrawide;
             };
           };
 
@@ -238,19 +244,29 @@ in
           # To find app-ids: niri msg windows
           window-rules = [
             {
-              matches = [ { app-id = "spotify"; } ];
+              # Case-insensitive and anchored throughout: niri matches app-id
+              # case-sensitively with an unanchored regex search, and these
+              # ids do not match their binary names -- Spotify reports
+              # "Spotify", Slack reports "slack", Chrome reports
+              # "Google-chrome" on X11. Anchoring stops a rule for one app
+              # from swallowing another's variants (e.g. -beta, -nightly).
+              matches = [ { app-id = "(?i)^spotify$"; } ];
               open-on-workspace = "7:music";
             }
             {
-              matches = [ { app-id = "google-chrome"; } ];
+              # Case-insensitive and anchored: running Chrome on X11 (see
+              # browser.nix) means the app-id comes from WM_CLASS as
+              # "Google-chrome" rather than Wayland's "google-chrome". Matching
+              # both keeps this rule working if Chrome ever returns to Wayland.
+              matches = [ { app-id = "(?i)^google-chrome$"; } ];
               open-on-workspace = "8:web";
             }
             {
-              matches = [ { app-id = "discord"; } ];
+              matches = [ { app-id = "(?i)^discord$"; } ];
               open-on-workspace = "9:chat";
             }
             {
-              matches = [ { app-id = "Slack"; } ];
+              matches = [ { app-id = "(?i)^slack$"; } ];
               open-on-workspace = "9:chat";
             }
           ];
