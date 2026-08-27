@@ -72,3 +72,11 @@
 	colorMoved = default
 [commit]
 	gpgsign = true
+[credential "https://github.com"]
+	helper = 
+	helper = !/nix/store/fz2h6h3cgw645ighi31zdjwbkdzmaav7-gh-2.96.0/bin/.gh-wrapped auth git-credential
+[credential "https://gist.github.com"]
+	helper = 
+	helper = !/nix/store/fz2h6h3cgw645ighi31zdjwbkdzmaav7-gh-2.96.0/bin/.gh-wrapped auth git-credential
+[init]
+	templateDir = /home/kschoon/.git-templates

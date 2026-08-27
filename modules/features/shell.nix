@@ -6,6 +6,8 @@
       environment.interactiveShellInit = ''
         eval "$(direnv hook bash)"
         export XDG_HOME_DIR="$HOME"
+        # prevent saving history when there is a space in front
+        export HISTCONTROL="ignoreboth"
         export PNPM_HOME="$HOME/.local/share/pnpm"
         export PATH="$PNPM_HOME:$PATH"
         export PATH=$PATH:~/go/bin:~/.yarn/bin/:~/.local/share/pnpm
