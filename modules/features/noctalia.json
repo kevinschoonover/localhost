@@ -585,8 +585,8 @@
   },
   "idle": {
     "enabled": true,
-    "screenOffTimeout": 600,
-    "lockTimeout": 300,
+    "screenOffTimeout": 300,
+    "lockTimeout": 180,
     "suspendTimeout": 86400,
     "fadeDuration": 5,
     "screenOffCommand": "",
