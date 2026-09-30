@@ -1,0 +1,178 @@
+# Noctalia v5 base configuration, shared by every host that runs niri.
+# Reference: https://docs.noctalia.dev/noctalia/configuration/
+#
+# Host-specific overrides come from `localhost.noctalia.settings` in noctalia.nix
+# and land next to this file as a higher-numbered *.toml, so noctalia merges them
+# on top. GUI edits go to ~/.local/state/noctalia/settings.toml and win over both.
+
+# ── Shell ─────────────────────────────────────────────────────────────────────
+
+[shell]
+font_family = "sans-serif"
+avatar_path = "/home/kschoon/.face"
+telemetry_enabled = false
+# The config is declarative; the first-run wizard would only write GUI overrides.
+setup_wizard_enabled = false
+settings_show_advanced = true
+# Nothing else registers a polkit agent on these hosts (see security.nix).
+polkit_agent = true
+# Start typing in niri's overview to open the launcher.
+niri_overview_type_to_launch_enabled = true
+clipboard_enabled = true
+clipboard_history_max_entries = 100
+clipboard_auto_paste = "auto"
+
+[shell.animation]
+enabled = true
+speed = 1.0
+
+[shell.shadow]
+direction = "down_right"
+alpha = 0.55
+
+[shell.panel]
+# Translucent panels; niri 26.04 blurs behind them (see the layer rules in niri.nix).
+transparency_mode = "glass"
+borders = true
+shadow = true
+launcher_placement = "floating"
+launcher_position = "center"
+clipboard_placement = "floating"
+clipboard_position = "center"
+control_center_placement = "attached"
+wallpaper_placement = "attached"
+session_placement = "attached"
+
+[shell.launcher]
+categories = true
+show_icons = true
+sort_by_usage = true
+pinned = []
+
+[shell.window_switcher]
+style = "carousel"
+mru = true
+show_caption = true
+show_count = true
+show_app_icon = true
+show_all_outputs = true
+
+[shell.screenshot]
+# Same folder niri's own Print screenshot uses (niri.nix screenshot-path).
+directory = "/home/kschoon/Pictures/Screenshots"
+copy_to_clipboard = true
+freeze_screen = true
+annotate = true
+
+# ── Wallpaper ─────────────────────────────────────────────────────────────────
+
+[wallpaper]
+enabled = true
+directory = "/home/kschoon/Pictures/Wallpapers"
+fill_mode = "crop"
+transition_duration = 1500
+edge_smoothness = 0.3
+
+[wallpaper.automation]
+enabled = true
+interval_seconds = 3600
+order = "random"
+recursive = true
+
+# Blurred, tinted wallpaper copy placed inside niri's overview backdrop.
+[backdrop]
+enabled = true
+blur_intensity = 0.4
+tint_intensity = 0.6
+
+# ── Theme ─────────────────────────────────────────────────────────────────────
+
+[theme]
+mode = "dark"
+source = "builtin"
+builtin = "Noctalia"
+
+[theme.templates]
+enable_builtin_templates = true
+builtin_ids = []
+# Community templates are fetched from api.noctalia.dev at runtime; keep the
+# theme fully local.
+enable_community_templates = false
+
+# ── Lock screen ───────────────────────────────────────────────────────────────
+
+[lockscreen]
+enabled = true
+# Lock on logind PrepareForSleep, so lid-close suspend never resumes unlocked.
+lock_before_suspend = true
+# No fprintd on these hosts; password (plus the yubikey PAM stack) only.
+fingerprint = false
+transition_duration = 1500
+
+# ── Services ──────────────────────────────────────────────────────────────────
+
+[system.monitor]
+enabled = true
+
+# The control center's Calendar tab shows a month view with no accounts. Account
+# sync stays off here; adding one in Settings → Calendar turns it on in
+# settings.toml (credentials live in Secret Service, never in this repo).
+[calendar]
+enabled = false
+
+[weather]
+enabled = true
+unit = "fahrenheit"
+effects = true
+
+[location]
+auto_locate = false
+address = "Seattle, WA"
+
+[audio]
+enable_overdrive = false
+enable_sounds = false
+
+[brightness]
+enable_ddcutil = false
+
+[nightlight]
+enabled = true
+temperature_day = 6500
+temperature_night = 4000
+
+# ── Idle ──────────────────────────────────────────────────────────────────────
+
+[idle]
+behavior_order = ["lock", "screen-off", "suspend"]
+# Fade the screen for this long before an idle action; any input cancels it.
+pre_action_fade_seconds = 5.0
+
+[idle.behavior.lock]
+timeout = 180
+action = "lock"
+enabled = true
+
+[idle.behavior.screen-off]
+timeout = 300
+action = "screen_off"
+enabled = true
+
+# Hosts that must never sleep disable this one in their configuration.nix.
+[idle.behavior.suspend]
+timeout = 86400
+action = "lock_and_suspend"
+enabled = true
+
+# ── Bar ───────────────────────────────────────────────────────────────────────
+# Layout, capsules, and widget set are the v5 defaults. Only the clock adds the
+# date, since the default shows time alone.
+
+[widget.clock]
+format = "{:%H:%M  %a %b %d}"
+tooltip_format = "{:%A, %B %d, %Y}"
+
+# ── Dock ──────────────────────────────────────────────────────────────────────
+
+[dock]
+enabled = false

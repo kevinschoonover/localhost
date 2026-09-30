@@ -62,5 +62,26 @@
 
       networking.hostName = "honeypot";
       system.stateVersion = "26.05";
+
+      # This laptop is a server: it must stay up with the lid closed and never
+      # sleep, whether from the lid, a key, logind idling, or an idle timer.
+      services.logind.settings.Login = {
+        HandleLidSwitch = "ignore";
+        HandleLidSwitchExternalPower = "ignore";
+        HandleLidSwitchDocked = "ignore";
+        HandleSuspendKey = "ignore";
+        HandleHibernateKey = "ignore";
+        IdleAction = "ignore";
+      };
+      # Refuse every sleep verb at the systemd level, so `systemctl suspend`
+      # from any client (noctalia's session menu included) is rejected.
+      systemd.sleep.settings.Sleep = {
+        AllowSuspend = "no";
+        AllowHibernation = "no";
+        AllowHybridSleep = "no";
+        AllowSuspendThenHibernate = "no";
+      };
+      # Keep noctalia's idle timer from even asking.
+      localhost.noctalia.settings.idle.behavior.suspend.enabled = false;
     };
 }
