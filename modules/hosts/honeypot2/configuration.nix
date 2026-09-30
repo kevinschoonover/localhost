@@ -11,6 +11,7 @@
       imports = [
         inputs.nixos-hardware.nixosModules.framework-16-7040-amd
         self.nixosModules.honeypot2Hardware
+        self.nixosModules.honeypot2IdleLights
 
         # System fundamentals
         self.nixosModules.boot
