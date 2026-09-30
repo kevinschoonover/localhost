@@ -22,6 +22,10 @@ in
       };
     in
     {
+      # niri spawns `noctalia` from PATH, so the shell must be installed
+      # wherever niri is.
+      imports = [ self.nixosModules.noctalia ];
+
       programs.niri = {
         enable = true;
         package = self.packages.${pkgs.stdenv.hostPlatform.system}.myNiri;
@@ -123,12 +127,9 @@ in
     {
       pkgs,
       lib,
-      self',
       ...
     }:
     let
-      noctaliaExe = lib.getExe self'.packages.myNoctalia;
-
       # The LG ultrawide's connector. Bound once because DRM renumbers these
       # between kernels and docks: this was DP-8, is now DP-7, and every
       # reference silently stopped matching without any error from niri.
@@ -140,7 +141,10 @@ in
         inherit pkgs;
         settings = {
           spawn-at-startup = [
-            (lib.getExe self'.packages.myNoctalia)
+            # By name from PATH: the host's noctalia module wraps the binary
+            # with its generated config, and the wrapper build is what
+            # validates that config. Same reasoning as google-chrome below.
+            "noctalia"
             (lib.getExe pkgs-unstable.kanshi)
             "sh -c 'niri msg action focus-workspace '1:code' && ${lib.getExe pkgs-unstable.kitty}'"
             [
@@ -268,9 +272,43 @@ in
               matches = [ { app-id = "(?i)^slack$"; } ];
               open-on-workspace = "9:chat";
             }
+            {
+              # noctalia's settings window is a normal toplevel; keep it
+              # floating instead of tiling into the column layout.
+              matches = [ { app-id = "^dev\\.noctalia\\.Noctalia$"; } ];
+              open-floating = true;
+              default-column-width.fixed = 1080;
+              default-window-height.fixed = 920;
+            }
           ];
 
-          # To list noctalia IPC targets/functions: noctalia-shell ipc show
+          # https://docs.noctalia.dev/noctalia/compositor-settings/niri/
+          layer-rules = [
+            {
+              # The blurred/tinted wallpaper copy from noctalia's [backdrop]
+              # section becomes the overview backdrop.
+              matches = [ { namespace = "^noctalia-backdrop"; } ];
+              place-within-backdrop = true;
+            }
+            {
+              # noctalia publishes its own blur regions (niri >= 26.04); xray
+              # would sample the wallpaper instead of the windows behind them.
+              matches = [ { namespace = "^noctalia-(bar-.+|notification|dock|panel|attached-panel|osd)$"; } ];
+              background-effect.xray = false;
+            }
+            {
+              matches = [ { namespace = "^noctalia-window-switcher$"; } ];
+              background-effect = {
+                blur = true;
+                xray = false;
+              };
+            }
+          ];
+
+          # Lets notification actions and the launcher activate windows.
+          debug.honor-xdg-activation-with-invalid-serial = _: { };
+
+          # To list noctalia IPC commands: noctalia msg --help
           binds = {
             # Terminal
             "Mod+Return".spawn-sh = lib.getExe pkgs-unstable.kitty;
@@ -278,8 +316,12 @@ in
             # Close window
             "Mod+Shift+Q".close-window = _: { };
 
-            # Application launcher (noctalia)
-            "Mod+D".spawn-sh = "${noctaliaExe} ipc call launcher toggle";
+            # noctalia panels
+            "Mod+D".spawn-sh = "noctalia msg panel-toggle launcher";
+            "Mod+S".spawn-sh = "noctalia msg panel-toggle control-center";
+            "Mod+V".spawn-sh = "noctalia msg panel-toggle clipboard";
+            "Mod+Comma".spawn-sh = "noctalia msg settings-toggle";
+            "Mod+Tab".spawn-sh = "noctalia msg window-switcher";
 
             # Wifi (iwmenu)
             "Mod+W".spawn-sh = "${lib.getExe pkgs-unstable.iwmenu} --launcher fuzzel";
@@ -342,29 +384,31 @@ in
             "Mod+Minus".set-column-width = "-10%";
             "Mod+Equal".set-column-width = "+10%";
 
-            # Screenshots
+            # Screenshots: niri's own picker on Print, noctalia's region
+            # capture with the annotation editor on Mod+Shift+S.
             "Print".screenshot = _: { };
             "Shift+Print".screenshot-window = _: { };
+            "Mod+Shift+S".spawn-sh = "noctalia msg screenshot-region";
 
-            # Volume
-            "XF86AudioRaiseVolume".spawn-sh = "pamixer -i 5";
-            "XF86AudioLowerVolume".spawn-sh = "pamixer -d 5";
-            "XF86AudioMute".spawn-sh = "pamixer -t";
+            # Volume, brightness and media go through noctalia so its OSD
+            # and privacy/media widgets see the change.
+            "XF86AudioRaiseVolume".spawn-sh = "noctalia msg volume-up";
+            "XF86AudioLowerVolume".spawn-sh = "noctalia msg volume-down";
+            "XF86AudioMute".spawn-sh = "noctalia msg volume-mute";
+            "XF86AudioMicMute".spawn-sh = "noctalia msg mic-mute";
 
-            # Brightness
-            "XF86MonBrightnessUp".spawn-sh = "brightnessctl set +5%";
-            "XF86MonBrightnessDown".spawn-sh = "brightnessctl set 5%-";
+            "XF86MonBrightnessUp".spawn-sh = "noctalia msg brightness-up";
+            "XF86MonBrightnessDown".spawn-sh = "noctalia msg brightness-down";
 
-            # Media
-            "XF86AudioPlay".spawn-sh = "playerctl play-pause";
-            "XF86AudioNext".spawn-sh = "playerctl next";
-            "XF86AudioPrev".spawn-sh = "playerctl previous";
+            "XF86AudioPlay".spawn-sh = "noctalia msg media toggle";
+            "XF86AudioNext".spawn-sh = "noctalia msg media next";
+            "XF86AudioPrev".spawn-sh = "noctalia msg media previous";
 
             # Session menu (lock, suspend, reboot, shutdown)
-            "Mod+Home".spawn-sh = "${noctaliaExe} ipc call sessionMenu toggle";
+            "Mod+Home".spawn-sh = "noctalia msg panel-toggle session";
 
             # Lock screen only
-            "Mod+Shift+Home".spawn-sh = "${noctaliaExe} ipc call lockScreen lock";
+            "Mod+Shift+Home".spawn-sh = "noctalia msg session lock";
 
             # Quit niri
             "Mod+Shift+E".quit = _: { };
