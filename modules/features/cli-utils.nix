@@ -2,6 +2,15 @@
 {
   flake.nixosModules.cli-utils =
     { pkgs, ... }:
+    let
+      # claude-code releases land on nixpkgs master days before nixos-unstable
+      # catches up. Only this one package comes from master, at the commit
+      # pinned in flake.nix.
+      pkgs-master = import inputs.nixpkgs-master {
+        inherit (pkgs.stdenv.hostPlatform) system;
+        config.allowUnfree = true;
+      };
+    in
     {
 
       environment.systemPackages = with pkgs; [
@@ -32,7 +41,7 @@
         unstable.opencode
         unstable.omp
 
-        unstable.claude-code
+        pkgs-master.claude-code
         unstable.kopia
         unstable.restic
         unstable.remmina
