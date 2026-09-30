@@ -7,7 +7,12 @@ let
 in
 {
   flake.nixosModules.niri =
-    { pkgs, lib, ... }:
+    {
+      config,
+      pkgs,
+      lib,
+      ...
+    }:
     let
       yaziDesktop = pkgs.makeDesktopItem {
         name = "yazi";
@@ -25,6 +30,18 @@ in
       # niri spawns `noctalia` from PATH, so the shell must be installed
       # wherever niri is.
       imports = [ self.nixosModules.noctalia ];
+
+      # A live `nixos-rebuild switch` that restarts these under a running niri
+      # session has frozen the desktop. When any of them changes, `switch`
+      # refuses and asks for `nixos-rebuild boot` + reboot; config-only changes
+      # still switch live. Override once with NIXOS_NO_CHECK=1.
+      system.switch.inhibitors = {
+        # systemd-logind restarts with systemd and takes every session down.
+        systemd = "${config.systemd.package}";
+        # systemd-udevd restarts whenever the udev rules change.
+        udev-rules = "${config.environment.etc."udev/rules.d".source}";
+        niri = "${config.programs.niri.package}";
+      };
 
       programs.niri = {
         enable = true;
