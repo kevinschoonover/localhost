@@ -20,12 +20,15 @@
         vid = "32ac";
         pid = "0012";
       };
+      # The mouse stays powered so it can still wake the screen. OpenRGB's
+      # Off mode is a no-op on it and no OpenRGB mode brings the lighting back
+      # afterwards, so it goes dark through Direct black and its firmware
+      # lighting returns by power-cycling its port on the TI hub (USB2 half
+      # 0451:8142, USB3 half 0451:8140).
       razerMouse = {
         device = "Razer Viper Ultimate";
-        # OpenRGB cannot read this mouse's current mode (it reports Direct
-        # regardless), and restoring a saved profile left it dark, so the
-        # resume command sets this mode explicitly.
-        mode = "Spectrum Cycle";
+        location = "1-2";
+        port = "1";
       };
 
       idleLights = pkgs.writeShellApplication {
@@ -87,6 +90,14 @@
             timeout "$limit" uhubctl --location ${duckyHub.location} --ports ${duckyHub.port} --action "$1"
           }
 
+          razer_dark() {
+            timeout "$limit" openrgb --noautoconnect --device "${razerMouse.device}" --mode Direct --color 000000
+          }
+
+          razer_restore() {
+            timeout "$limit" uhubctl --location ${razerMouse.location} --ports ${razerMouse.port} --action cycle --delay 1
+          }
+
           case "''${1-}" in
             off)
               if [ -e "$off_marker" ]; then
@@ -96,7 +107,7 @@
               step "save Framework keyboard backlight" save_backlight
               touch "$off_marker"
               step "Framework keyboard backlight off" qmk 0
-              step "Razer lighting off" timeout "$limit" openrgb --noautoconnect --device "${razerMouse.device}" --mode off
+              step "Razer lighting off" razer_dark
               step "Ducky port power off" ducky off
               ;;
             on)
@@ -106,7 +117,7 @@
               # Keyboard first: it is the one that cannot type while dark.
               step "Ducky port power on" ducky on
               step "restore Framework keyboard backlight" restore_backlight
-              step "Razer lighting on" timeout "$limit" openrgb --noautoconnect --device "${razerMouse.device}" --mode "${razerMouse.mode}"
+              step "Razer lighting on" razer_restore
               # Keep the saved levels until a fully clean restore, so the next
               # `on` retries instead of forgetting what to restore.
               if [ "$failed" -eq 0 ]; then
@@ -126,12 +137,15 @@
     {
       environment.systemPackages = [ idleLights ];
 
-      # Lets the seat user run idle-lights without sudo, scoped to this hub:
-      # uhubctl opens the hub's device node to find it, then switches power
-      # through the kernel's per-port sysfs `disable` file.
+      # Lets the `users` group run idle-lights without sudo, scoped to the two
+      # hubs above (the Realtek hub and the TI hub it hangs off): uhubctl opens
+      # a hub's device node to find it, then switches power through the
+      # kernel's per-port sysfs `disable` file.
       services.udev.extraRules = ''
         SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="0bda", ATTR{idProduct}=="5411|0411", GROUP="users", MODE="0660"
         ACTION=="add", SUBSYSTEM=="usb", DRIVER=="hub", ATTRS{idVendor}=="0bda", ATTRS{idProduct}=="5411|0411", RUN+="${pkgs.bash}/bin/sh -c 'chgrp users $sys$devpath/*-port*/disable && chmod 0664 $sys$devpath/*-port*/disable'"
+        SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", ATTR{idVendor}=="0451", ATTR{idProduct}=="8142|8140", GROUP="users", MODE="0660"
+        ACTION=="add", SUBSYSTEM=="usb", DRIVER=="hub", ATTRS{idVendor}=="0451", ATTRS{idProduct}=="8142|8140", RUN+="${pkgs.bash}/bin/sh -c 'chgrp users $sys$devpath/*-port*/disable && chmod 0664 $sys$devpath/*-port*/disable'"
       '';
       # OpenRGB's own rules grant the seat user its devices (and silence its
       # "udev rules are not installed" warning on every call).
