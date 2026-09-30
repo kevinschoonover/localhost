@@ -2,7 +2,46 @@
 {
   flake.nixosModules.shell =
     { pkgs, ... }:
+    let
+      # Applies the repo's config for this host: live `switch` when the
+      # pre-switch checks pass, otherwise `boot` + reboot. The checks include
+      # system.switch.inhibitors (niri.nix), which a live switch into a running
+      # niri session must not cross.
+      nixosApply = pkgs.writeShellApplication {
+        name = "nixos-apply";
+        text = ''
+          repo="$HOME/git-local/kevinschoonover/localhost"
+          host="$(< /proc/sys/kernel/hostname)"
+
+          case "''${1-}" in
+            "") ;;
+            --update) (cd "$repo" && nix flake update) ;;
+            *)
+              echo "usage: nixos-apply [--update]" >&2
+              exit 2
+              ;;
+          esac
+
+          toplevel="$(nix build --no-link --print-out-paths \
+            "$repo#nixosConfigurations.$host.config.system.build.toplevel")"
+
+          # A failed check and a failed sudo both exit 1; authenticate first so
+          # a bad password aborts instead of reading as a refused switch.
+          sudo -v
+
+          if sudo "$toplevel/bin/switch-to-configuration" check; then
+            sudo nixos-rebuild switch --flake "$repo#$host"
+          else
+            echo "Critical components changed; staging for next boot instead." >&2
+            sudo nixos-rebuild boot --flake "$repo#$host"
+            echo "Staged. Reboot to apply: sudo reboot" >&2
+          fi
+        '';
+      };
+    in
     {
+      environment.systemPackages = [ nixosApply ];
+
       environment.interactiveShellInit = ''
         eval "$(direnv hook bash)"
         export XDG_HOME_DIR="$HOME"
@@ -16,9 +55,9 @@
         # launched via $BROWSER bypassed the flags set in browser.nix.
         export BROWSER=google-chrome-stable
         alias vim="nvim"
-        alias update="pushd ~/git-local/kevinschoonover/localhost && nix flake update; popd && sudo nixos-rebuild switch"
+        alias update="nixos-apply --update"
         alias grep="rg"
-        alias rb="sudo nixos-rebuild switch"
+        alias rb="nixos-apply"
         alias cat="bat"
         alias ls="eza"
         alias tb="cd ~/git-local/bloominlabs/hostin-proj/test-bed"
