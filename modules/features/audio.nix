@@ -14,7 +14,9 @@
         # To find node.name values for new devices, connect the device then run:
         #   pw-dump | jq -r '.[] | select(.type == "PipeWire:Interface:Node") | select(.info.props["media.class"] // "" | test("Audio")) | "\(.info.props["node.name"]) | \(.info.props["node.description"])"'
         # Use monitor.alsa.rules for USB/built-in, monitor.bluez.rules for bluetooth.
-        # Prefix node.name with ~ for glob matching (e.g. "~bluez_output.XX_XX.*").
+        # Prefix node.name with ~ for regex matching (e.g. "~bluez_output.XX_XX.*").
+        # Bluetooth outputs spell the address with underscores, inputs with
+        # colons; an unescaped `.` matches either.
         wireplumber.extraConfig."51-rename-devices" = {
           "monitor.alsa.rules" = [
             {
