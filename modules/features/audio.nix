@@ -2,6 +2,9 @@
 {
   flake.nixosModules.audio =
     { pkgs, ... }:
+    let
+      samsonInput = "alsa_input.usb-C-Media_Electronics_Inc._USB_Advanced_Audio_Device-00.analog-stereo";
+    in
     {
       security.rtkit.enable = true;
       services.pipewire = {
@@ -47,7 +50,7 @@
             {
               matches = [
                 {
-                  "node.name" = "alsa_input.usb-C-Media_Electronics_Inc._USB_Advanced_Audio_Device-00.analog-stereo";
+                  "node.name" = samsonInput;
                 }
               ];
               actions.update-props = {
@@ -105,15 +108,53 @@
             end
           }:register ()
         '';
-        wireplumber.extraConfig."90-bluetooth-default-sink" = {
+        # The Samson is the only microphone worth using, whatever the output.
+        # Choosing it whenever it appears (every login and every replug) undoes
+        # any other system-default pick by the next session; per-app input
+        # choices are untouched.
+        wireplumber.extraScripts."custom/samson-default-source.lua" = ''
+          log = Log.open_topic ("s-custom-samson-default-source")
+
+          SimpleEventHook {
+            name = "custom/samson-default-source",
+            interests = {
+              EventInterest {
+                Constraint { "event.type", "=", "node-added" },
+                Constraint { "media.class", "=", "Audio/Source" },
+                Constraint { "node.name", "=", "${samsonInput}" },
+              },
+            },
+            execute = function (event)
+              local name = event:get_subject ().properties ["node.name"]
+              local om = event:get_source ():call ("get-object-manager", "metadata")
+              local metadata = om:lookup { Constraint { "metadata.name", "=", "default" } }
+              if metadata == nil then
+                log:warning ("no default metadata; leaving microphone for " .. name)
+                return
+              end
+              log:info ("Samson added, choosing it as microphone: " .. name)
+              metadata:set (0, "default.configured.audio.source", "Spa:String:JSON",
+                  Json.Object { ["name"] = name }:to_string ())
+            end
+          }:register ()
+        '';
+        wireplumber.extraConfig."90-default-nodes" = {
           "wireplumber.components" = [
             {
               name = "custom/bluetooth-default-sink.lua";
               type = "script/lua";
               provides = "custom.bluetooth-default-sink";
             }
+            {
+              name = "custom/samson-default-source.lua";
+              type = "script/lua";
+              provides = "custom.samson-default-source";
+            }
           ];
-          "wireplumber.profiles".main."custom.bluetooth-default-sink" = "required";
+          "wireplumber.profiles".main = {
+            "custom.bluetooth-default-sink" = "required";
+            "custom.samson-default-source" = "required";
+          };
         };
       };
       environment.systemPackages = with pkgs; [
