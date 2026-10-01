@@ -80,9 +80,15 @@ in
           # every disconnect so a returning user never loses a device.
           idle_marker="$state/idle"
           pid_file="$state/watcher.pid"
-          interval_seconds=60
+          # Overridable only to iterate on this script by hand; noctalia never
+          # sets it. Bounded so a typo cannot spin or stall the watcher.
+          interval_seconds="''${BLUETOOTH_IDLE_INTERVAL:-60}"
+          if [[ ! "$interval_seconds" =~ ^[0-9]+$ ]] || ((interval_seconds < 1 || interval_seconds > 3600)); then
+            echo "BLUETOOTH_IDLE_INTERVAL must be 1-3600 seconds, got: $interval_seconds" >&2
+            exit 2
+          fi
           # 12 hours of rechecks while audio keeps a device in use.
-          max_checks=720
+          max_checks=$((12 * 3600 / interval_seconds))
 
           connected_devices() {
             local listing kind mac
@@ -95,18 +101,22 @@ in
           }
 
           # A device is in use while any of its PipeWire nodes (playback or
-          # microphone) is running. Fails closed: if PipeWire cannot be read,
-          # the device counts as in use and stays connected.
+          # microphone) is running. BlueZ names output nodes with the address
+          # in underscores (bluez_output.AA_BB_...) but input nodes with it in
+          # colons (bluez_input.AA:BB:...), so both spellings are matched.
+          # Fails closed: if PipeWire cannot be read, the device counts as in
+          # use and stays connected.
           in_use() {
             local dump
             if ! dump="$(timeout 10 pw-dump)"; then
               echo "pw-dump failed; keeping $1 connected" >&2
               return 0
             fi
-            jq -e --arg mac "''${1//:/_}" '
+            jq -e --arg colons "$1" --arg underscores "''${1//:/_}" '
               any(.[];
                 .type == "PipeWire:Interface:Node"
-                and ((.info.props["node.name"] // "") | startswith("bluez_") and contains($mac))
+                and ((.info.props["node.name"] // "")
+                  | startswith("bluez_") and (contains($colons) or contains($underscores)))
                 and .info.state == "running")
             ' <<<"$dump" >/dev/null
           }
