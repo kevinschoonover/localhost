@@ -144,7 +144,7 @@ temperature_night = 4000
 # ── Idle ──────────────────────────────────────────────────────────────────────
 
 [idle]
-behavior_order = ["lock", "screen-off", "suspend"]
+behavior_order = ["lock", "screen-off", "bluetooth-off", "suspend"]
 # Fade the screen for this long before an idle action; any input cancels it.
 pre_action_fade_seconds = 5.0
 
@@ -159,6 +159,16 @@ action = "screen_off"
 enabled = true
 
 # Hosts that must never sleep disable this one in their configuration.nix.
+# These hosts almost never suspend, so Bluetooth links never drop on their own
+# and headphones drain while connected. Devices still carrying audio are kept
+# until it stops (bluetooth-idle in noctalia.nix).
+[idle.behavior.bluetooth-off]
+timeout = 600
+action = "command"
+command = "bluetooth-idle start"
+resume_command = "bluetooth-idle stop"
+enabled = true
+
 [idle.behavior.suspend]
 timeout = 86400
 action = "lock_and_suspend"
