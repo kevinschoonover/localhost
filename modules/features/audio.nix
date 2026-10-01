@@ -71,6 +71,48 @@
             }
           ];
         };
+
+        # WirePlumber restores the most recently *chosen* output, so after a
+        # manual pick of the Samson or the monitor, newly connected headphones
+        # never take over. Choosing every Bluetooth output as it appears makes
+        # audio follow whichever pair was just connected; when it goes away,
+        # WirePlumber falls back down its usual history.
+        wireplumber.extraScripts."custom/bluetooth-default-sink.lua" = ''
+          log = Log.open_topic ("s-custom-bluetooth-default-sink")
+
+          SimpleEventHook {
+            name = "custom/bluetooth-default-sink",
+            interests = {
+              EventInterest {
+                Constraint { "event.type", "=", "node-added" },
+                Constraint { "media.class", "=", "Audio/Sink" },
+                Constraint { "node.name", "matches", "bluez_output.*" },
+              },
+            },
+            execute = function (event)
+              local name = event:get_subject ().properties ["node.name"]
+              local om = event:get_source ():call ("get-object-manager", "metadata")
+              local metadata = om:lookup { Constraint { "metadata.name", "=", "default" } }
+              if metadata == nil then
+                log:warning ("no default metadata; leaving output for " .. name)
+                return
+              end
+              log:info ("bluetooth output added, choosing it: " .. name)
+              metadata:set (0, "default.configured.audio.sink", "Spa:String:JSON",
+                  Json.Object { ["name"] = name }:to_string ())
+            end
+          }:register ()
+        '';
+        wireplumber.extraConfig."90-bluetooth-default-sink" = {
+          "wireplumber.components" = [
+            {
+              name = "custom/bluetooth-default-sink.lua";
+              type = "script/lua";
+              provides = "custom.bluetooth-default-sink";
+            }
+          ];
+          "wireplumber.profiles".main."custom.bluetooth-default-sink" = "required";
+        };
       };
       environment.systemPackages = with pkgs; [
         pamixer
