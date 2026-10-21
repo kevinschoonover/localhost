@@ -186,3 +186,9 @@ tooltip_format = "{:%A, %B %d, %Y}"
 
 [dock]
 enabled = false
+
+# ── Plugins ───────────────────────────────────────────────────────────────────
+
+[plugins]
+# screen_recorder backs the Mod+Shift+R region-recording bind in niri.nix.
+enabled = ["noctalia/screen_recorder"]

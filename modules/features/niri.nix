@@ -406,6 +406,9 @@ in
             "Print".screenshot = _: { };
             "Shift+Print".screenshot-window = _: { };
             "Mod+Shift+S".spawn-sh = "noctalia msg screenshot-region";
+            # Region recording via noctalia's screen_recorder plugin: the
+            # first press opens a slurp picker, the second stops recording.
+            "Mod+Shift+R".spawn-sh = "noctalia msg plugin noctalia/screen_recorder:service all toggle region";
 
             # Volume, brightness and media go through noctalia so its OSD
             # and privacy/media widgets see the change.
