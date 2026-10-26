@@ -26,6 +26,17 @@
       fsType = "vfat";
     };
 
+    # External disk holding the media/ docker-compose stack (configs and library).
+    # nofail keeps boot going without it; Docker refuses to start until it is
+    # mounted, because a container started first binds the empty directory
+    # underneath and runs as a blank install against the root disk.
+    fileSystems."/opt/appdata" = {
+      device = "/dev/disk/by-uuid/86E8-882E";
+      fsType = "exfat";
+      options = [ "uid=1000" "gid=1000" "fmask=0022" "dmask=0022" "nofail" ];
+    };
+    systemd.services.docker.unitConfig.RequiresMountsFor = "/opt/appdata";
+
     swapDevices = [{ device = "/dev/disk/by-label/swap"; }];
 
     networking.useDHCP = lib.mkDefault true;
