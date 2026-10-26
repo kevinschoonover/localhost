@@ -136,6 +136,8 @@ services:
     volumes:
       - ${CONFIG_PATH}/jellyfin:/config
       - ${DATA_PATH}/media:/data/media
+    devices:
+      - /dev/dri:/dev/dri # Intel UHD 620 for QSV/VA-API transcoding
     ports:
       - 8096:8096
     restart: ${RESTART_POLICY}
